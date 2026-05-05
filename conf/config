@@ -1,0 +1,84 @@
+
+Host github_fues
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_fues_collaudo
+
+Host github_lilly
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_rsa_lilly
+
+Host github_cgd
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_rsa_cgd
+
+Host github_unitec_collaudo
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/id_rsa_uni_collaudo
+  IdentitiesOnly yes
+
+Host develboard
+  Hostname github.com
+  User git
+  IdentityFile ~/.ssh/id_rsa-develboard
+  IdentitiesOnly yes
+
+Host develboard_collaudo
+  Hostname github.com
+  User git
+  IdentityFile ~/.ssh/id_rsa_develboard_collaudo
+  IdentitiesOnly yes
+
+Host sbarre-neve
+  Hostname github.com
+  User git
+  IdentityFile ~/.ssh/id_rsa_autostrade-sbarre-sicurezza-image
+  IdentitiesOnly yes
+
+Host sbarre-neve-b1
+  User root
+  HostName 10.3.16.221
+  PubkeyAcceptedAlgorithms +ssh-rsa
+  HostkeyAlgorithms +ssh-rsa
+
+Host produtils
+  Hostname github.com
+  User git
+  IdentityFile ~/.ssh/id_produtils
+
+  Host dbio_one
+    User root
+    HostName 172.25.0.1
+    PubkeyAcceptedAlgorithms +ssh-rsa
+    HostkeyAlgorithms +ssh-rsa
+    IdentitiesOnly yes
+
+  Host dbcn
+    User root
+    HostName 172.25.100.1
+    PubkeyAcceptedAlgorithms +ssh-rsa
+    HostkeyAlgorithms +ssh-rsa
+    IdentitiesOnly yes
+
+  Host seb
+    User root
+    HostName 192.168.17.126
+    PubkeyAcceptedAlgorithms +ssh-rsa
+    HostkeyAlgorithms +ssh-rsa
+    IdentitiesOnly yes
+
+  Host seb3
+    User root
+    HostName 192.168.17.126
+    PubkeyAcceptedAlgorithms +ssh-rsa
+    HostkeyAlgorithms +ssh-rsa
+    IdentitiesOnly yes
+
+  Host electronic_keystop_collaudo
+    User git
+    Hostname github.com
+    IdentityFile ~/.ssh/id_rsa_electronic_keystop_collaudo
+

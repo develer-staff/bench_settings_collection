@@ -1,0 +1,21 @@
+. .venv/bin/activate
+
+if [ -e /var/run/dhcp-server/dhcpd.pid ]; then
+│ │ echo "Ok, tutto bene";
+else
+│ │ echo "Il server dhcpd non è partito, lo riavvio..";
+│ │ sudo systemctl restart isc-dhcp-server
+fi
+
+if ! pgrep -x "nuttcp" > /dev/null; then
+│ │ echo "avvio il server Nuttcp.."
+│ │ nuttcp -S
+fi
+
+export PYTHONUNBUFFERED="true"
+export ODOOPROXYUSER=
+export ODOOPROXYPASS=
+export UPLOAD_SLEEP_DELAY="5"
+export PATH=./:$PATH
+#export BANNED_MAC="40:00:09:0A:00:16"
+

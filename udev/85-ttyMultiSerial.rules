@@ -1,0 +1,7 @@
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0030", GROUP="dialout", SYMLINK+="ttyMultiSerial", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0031", GROUP="dialout", SYMLINK+="ttyMultiSerial", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0032", GROUP="dialout", SYMLINK+="ttyMultiSerial", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0033", GROUP="dialout", SYMLINK+="ttyMultiSerial", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0034", GROUP="dialout", SYMLINK+="ttyMultiSerial", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0066", GROUP="dialout", SYMLINK+="ttyMultiSerial", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0062", GROUP="dialout", SYMLINK+="ttyMultiSerial", MODE="0666"

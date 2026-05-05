@@ -1,0 +1,15 @@
+#export PYTHONPATH=..:..:
+. .venv/bin/activate
+
+[ x$(~/src/gnome-keyring-cli/gnome-keyring-cli show) == x"lock" ] && ~/src/gnome-keyring-cli/gnome-keyring-cli unlock
+
+if [ -e /var/run/dhcp-server/dhcpd.pid ]; then
+    echo "Ok, tutto bene";
+else
+    echo "Il server dhcpd non è partito, lo riavvio..";
+    sudo systemctl restart isc-dhcp-server
+fi
+
+export PYTHONUNBUFFERED="true"
+export PATH=./:$PATH
+

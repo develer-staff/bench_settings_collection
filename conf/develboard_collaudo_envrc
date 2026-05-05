@@ -1,0 +1,34 @@
+. .venv/bin/activate
+
+if pgrep -x "isc-dhcp-server" > /dev/null
+then
+    echo "Il server dhcpd non serve lo stoppo.."
+    sudo systemctl stop isc-dhcp-server
+fi
+touch /var/lib/tftpboot/test_file
+
+
+for ip in "192.168.10.1" "192.168.10.254"; do
+	if [ "x$(ip a|grep -o 192.168.10.1)" == "x" ]; then
+	    echo "Aggiungo gli ip del collaudo che servono"
+	    echo "sudo ip addr add ${ip}/24 dev enp2s0"
+	    sudo ip addr add ${ip}/24 dev enp2s0
+	fi
+done
+
+# Ensure tfptd server is running
+if [ "x$(pidof in.tftpd)" == "x" ]; then
+    echo -n "tfptd-hpa service seem down run it.."
+    sudo systemctl restart tftpd-hpa.service
+    echo "done"
+else
+    echo "tfptd-hpa service is run..ok"
+fi
+
+
+export PYTHONUNBUFFERED="true"
+#export ODOOPROXYUSER=
+#export ZEBRA_IPADD="192.168.17.200"
+#export ZEBRA_IPADD="10.3.11.71"
+export PATH=./:$PATH
+

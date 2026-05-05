@@ -1,0 +1,8 @@
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0025", GROUP="dialout", SYMLINK+="ttyGenesis", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0026", GROUP="dialout", SYMLINK+="ttyGenesis", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0027", GROUP="dialout", SYMLINK+="ttyGenesis", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0028", GROUP="dialout", SYMLINK+="ttyGenesis", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0029", GROUP="dialout", SYMLINK+="ttyGenesis", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0083", GROUP="dialout", SYMLINK+="ttyGenesis", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0107", GROUP="dialout", SYMLINK+="ttyGenesis", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{product}=="Genesis", GROUP="dialout", SYMLINK+="ttyGenesis", MODE="0666"

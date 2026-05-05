@@ -1,0 +1,3 @@
+SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="A50285BI", GROUP="dialout", SYMLINK+="ttyFlash", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0056", GROUP="dialout", SYMLINK+="ttyFlash", MODE="0666"
+
