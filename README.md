@@ -1,4 +1,4 @@
-# Setting collection for Test Bench PC
+# Settings collection for Test Bench PC
 
 ## Plug-in USB devices
 
