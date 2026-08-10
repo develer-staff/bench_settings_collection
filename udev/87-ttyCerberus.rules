@@ -1,1 +1,2 @@
 SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0036", GROUP="dialout", SYMLINK+="ttyCerberus", MODE="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", ATTRS{serial}=="STR-0088", GROUP="dialout", SYMLINK+="ttyCerberus", MODE="0666"
