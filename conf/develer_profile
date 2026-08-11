@@ -1,0 +1,5 @@
+EDITOR=vim
+LESS='--ignore-case --hilite-search -R --chop-long-lines'
+export IAMRASKY=1
+eval "$(direnv hook bash)"
+cat .logo
