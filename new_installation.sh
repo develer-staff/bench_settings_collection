@@ -10,7 +10,11 @@ function ctrl_c() {
 sudo whoami
 
 echo -n "Install basic packages.."
-sudo dnf install openssh-server openssl git git-lfs direnv tmux -y
+sudo dnf install openssh-server openssl \
+  git git-lfs direnv tmux \
+  python3.10 python3.10-devel.x86_64 \
+  gcc \
+  -y
 sudo systemctl enable --now sshd
 echo "..done"
 
