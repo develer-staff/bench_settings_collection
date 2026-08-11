@@ -17,3 +17,11 @@ Reload confings with udavadm command:
 `$ sudo udevadm control --reload-rules && udevadm trigger`
 
 Before to do this check if all usb devices are unpluged.
+
+## New PC installation
+
+The first installation could be done by the script:
+
+`$ ./new_installation.sh`
+
+This script automate the major part of bench configuration, for now it support only Fedora distro.
