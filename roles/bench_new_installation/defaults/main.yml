@@ -1,5 +1,10 @@
 ---
-bench_repo_root: "{{ playbook_dir | dirname | dirname }}"
+# Repo root (playbooks/ lives one level under the repository root).
+bench_repo_root: "{{ playbook_dir | dirname }}"
+
+bench_profile_src: "{{ bench_repo_root }}/conf/develer_profile"
+bench_logo_src: "{{ bench_repo_root }}/conf/logo"
+bench_dboard_src: "{{ bench_repo_root }}/utils/dboard"
 
 # Inventory host name (e.g. solaris, pathfinder). Override per-host if needed.
 bench_hostname: "{{ inventory_hostname }}"
