@@ -2,21 +2,16 @@
 
 ## Plug-in USB devices
 
-Copy all udev rules into:
+Udev rules live in `conf/udev/` and are installed by the Ansible playbook (`install_udev` task) into `/etc/udev/rules.d`, then reloaded.
 
-`/etc/udev/rules.d`
+Manual equivalent:
 
-Like:
+```bash
+sudo cp conf/udev/* /etc/udev/rules.d/
+sudo udevadm control --reload && sudo udevadm trigger
+```
 
-`$ sudo cp udev/* /etc/udev/rules.d/`
-
-You should be root.
-
-Reload confings with udavadm command:
-
-`$ sudo udevadm control --reload-rules && udevadm trigger`
-
-Before to do this check if all usb devices are unpluged.
+Before doing this, unplug USB devices.
 
 ## New PC installation
 
@@ -61,6 +56,7 @@ Source files used by the playbook:
 
 - `conf/develer_profile`, `conf/logo` → user homes
 - `utils/dboard` → `/usr/local/bin/dboard` (root, mode 0755)
+- `conf/udev/*.rules` → `/etc/udev/rules.d/`
 
 Then:
 

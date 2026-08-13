@@ -19,3 +19,6 @@
 
 - name: Install Insync
   ansible.builtin.include_tasks: insync.yml
+
+- name: Install udev rules
+  ansible.builtin.include_tasks: install_udev.yml

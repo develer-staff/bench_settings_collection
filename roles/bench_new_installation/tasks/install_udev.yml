@@ -1,0 +1,21 @@
+---
+- name: Install udev rules from conf/udev
+  ansible.builtin.copy:
+    src: "{{ bench_udev_src }}/"
+    dest: /etc/udev/rules.d/
+    owner: root
+    group: root
+    mode: "0644"
+  register: bench_udev_rules
+
+- name: Reload udev rules
+  ansible.builtin.command:
+    cmd: udevadm control --reload
+  when: bench_udev_rules is changed
+  changed_when: true
+
+- name: Trigger udev
+  ansible.builtin.command:
+    cmd: udevadm trigger
+  when: bench_udev_rules is changed
+  changed_when: true
