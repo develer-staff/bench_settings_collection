@@ -24,7 +24,7 @@
 
 - name: Copy develer_profile to user homes
   ansible.builtin.copy:
-    src: "{{ bench_repo_root }}/conf/develer_profile"
+    src: "{{ bench_profile_src }}"
     dest: "{{ bench_user_homes[item] }}/.develer_profile"
     owner: "{{ item }}"
     group: "{{ item }}"
@@ -33,7 +33,7 @@
 
 - name: Copy logo to user homes
   ansible.builtin.copy:
-    src: "{{ bench_repo_root }}/conf/logo"
+    src: "{{ bench_logo_src }}"
     dest: "{{ bench_user_homes[item] }}/.logo"
     owner: "{{ item }}"
     group: "{{ item }}"

@@ -1,36 +1,24 @@
 ---
-- name: Ensure ~/.local/bin exists
-  ansible.builtin.file:
-    path: "{{ bench_user_homes[item] }}/.local/bin"
-    state: directory
-    owner: "{{ item }}"
-    group: "{{ item }}"
-    mode: "0755"
-  loop: "{{ bench_shell_users }}"
-  when: item in bench_user_homes
-
-- name: Check that bin/dboard exists in the repo
+- name: Check that utils/dboard exists in the repo
   ansible.builtin.stat:
-    path: "{{ bench_repo_root }}/bin/dboard"
+    path: "{{ bench_dboard_src }}"
   register: dboard_src
   run_once: true
   delegate_to: localhost
   become: false
 
-- name: Fail if bin/dboard is missing
+- name: Fail if utils/dboard is missing
   ansible.builtin.fail:
     msg: >-
-      Missing {{ bench_repo_root }}/bin/dboard.
-      Place the dboard binary in bin/ before running this playbook.
+      Missing {{ bench_dboard_src }}.
+      Place the dboard binary in utils/ before running this playbook.
   when: not dboard_src.stat.exists
   run_once: true
 
-- name: Install dboard into ~/.local/bin
+- name: Install dboard into /usr/local/bin
   ansible.builtin.copy:
-    src: "{{ bench_repo_root }}/bin/dboard"
-    dest: "{{ bench_user_homes[item] }}/.local/bin/dboard"
-    owner: "{{ item }}"
-    group: "{{ item }}"
+    src: "{{ bench_dboard_src }}"
+    dest: /usr/local/bin/dboard
+    owner: root
+    group: root
     mode: "0755"
-  loop: "{{ bench_shell_users }}"
-  when: item in bench_user_homes

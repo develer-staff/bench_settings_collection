@@ -11,7 +11,7 @@
 - name: Install local shell profile and logo
   ansible.builtin.include_tasks: local_profile.yml
 
-- name: Install local utils (dboard)
+- name: Install system utils into /usr/local/bin
   ansible.builtin.include_tasks: add_utils.yml
 
 - name: Install Docker CE
