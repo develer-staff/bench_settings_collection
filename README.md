@@ -40,7 +40,7 @@ pip install passlib
 
 #### Inventory and secrets
 
-Edit `ansible/inventory/hosts.yml` for the bench nodes (`ansible_user: develer`).
+Edit `inventory/hosts.yml` for the bench nodes (`ansible_user: develer`).
 On first bootstrap, if `develer` does not exist yet, connect as `root` (or `collaudo`) once.
 
 SSH uses username/password (`ansible_user` + `ansible_ssh_pass`).
@@ -48,7 +48,6 @@ SSH uses username/password (`ansible_user` + `ansible_ssh_pass`).
 Create per-host secrets:
 
 ```bash
-cd ansible
 cp inventory/host_vars/solaris.yml.example inventory/host_vars/solaris.yml
 # edit ansible_ssh_pass, ansible_become_pass, develer_password, collaudo_password
 ansible-vault encrypt inventory/host_vars/solaris.yml
@@ -58,7 +57,12 @@ Repeat for each host (`pathfinder`, …). If login and sudo share the same passw
 
 The playbook creates `develer` with sudo (`wheel`) first, then adds `collaudo` without sudo.
 
-Ensure `bin/dboard` is present in the repo, then:
+Source files used by the playbook:
+
+- `conf/develer_profile`, `conf/logo` → user homes
+- `utils/dboard` → `/usr/local/bin/dboard` (root, mode 0755)
+
+Then:
 
 ```bash
 ansible-playbook playbooks/new_installation.yml --ask-vault-pass
@@ -69,5 +73,5 @@ After Docker group membership changes, users must log out and back in (or reboot
 ### Bash script
 
 ```bash
-./new_installation.sh
+./scripts/new_installation.sh
 ```
