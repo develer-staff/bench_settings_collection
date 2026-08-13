@@ -22,3 +22,7 @@
 
 - name: Install udev rules
   ansible.builtin.include_tasks: install_udev.yml
+
+- name: Generate SSH key, install for collaudo, checkout repo
+  ansible.builtin.include_tasks: checkout_repo.yml
+  when: bench_git_repo_url | length > 0

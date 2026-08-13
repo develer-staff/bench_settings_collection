@@ -42,5 +42,16 @@ bench_docker_users:
 bench_develer_user: develer
 bench_collaudo_user: collaudo
 
+# Git checkout as collaudo (SSH). Set in host_vars to enable.
+# repo URL should use the Host alias, e.g. git@nome_repo:org/repo.git
+bench_ssh_key_type: ed25519
+bench_ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/bench_{{ inventory_hostname }}_{{ bench_git_ssh_host }}"
+bench_git_repo_url: ""
+bench_git_ssh_host: ""
+bench_git_ssh_hostname: ""
+bench_git_ssh_user: git
+bench_git_version: HEAD
+bench_git_dest: "/home/{{ bench_collaudo_user }}/src/repo"
+
 insync_gpg_key_url: https://d2t3ff60b2tol4.cloudfront.net/repomd.xml.key
 insync_repo_baseurl: "http://yum.insync.io/fedora/{{ ansible_facts['distribution_major_version'] }}/"

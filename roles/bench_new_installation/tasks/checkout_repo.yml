@@ -1,0 +1,128 @@
+---
+- name: Require git SSH host settings
+  ansible.builtin.assert:
+    that:
+      - bench_git_ssh_host | length > 0
+      - bench_git_ssh_hostname | length > 0
+      - bench_git_repo_url | length > 0
+    fail_msg: >-
+      Set bench_git_repo_url, bench_git_ssh_host and bench_git_ssh_hostname
+      in inventory/host_vars/{{ inventory_hostname }}.yml
+
+- name: Resolve collaudo home directory
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ bench_collaudo_user }}"
+
+- name: Set collaudo path facts
+  ansible.builtin.set_fact:
+    bench_collaudo_home: "{{ ansible_facts.getent_passwd[bench_collaudo_user][4] }}"
+    bench_ssh_key_remote_name: "id_{{ bench_ssh_key_type }}_{{ bench_git_ssh_host }}"
+
+- name: Ensure local SSH key directory exists
+  ansible.builtin.file:
+    path: "{{ bench_ssh_key_path | dirname }}"
+    state: directory
+    mode: "0700"
+  delegate_to: localhost
+  become: false
+
+- name: Generate SSH keypair on the control machine
+  ansible.builtin.command:
+    argv:
+      - ssh-keygen
+      - -t
+      - "{{ bench_ssh_key_type }}"
+      - -f
+      - "{{ bench_ssh_key_path }}"
+      - -N
+      - ""
+      - -C
+      - "collaudo@{{ inventory_hostname }}-{{ bench_git_ssh_host }}"
+    creates: "{{ bench_ssh_key_path }}"
+  delegate_to: localhost
+  become: false
+
+- name: Read public key from control machine
+  ansible.builtin.slurp:
+    src: "{{ bench_ssh_key_path }}.pub"
+  register: bench_ssh_pubkey_b64
+  delegate_to: localhost
+  become: false
+
+- name: Show public key to add on the git forge
+  ansible.builtin.debug:
+    msg: |
+
+      ============================================================
+      Add this public SSH key for {{ inventory_hostname }} / collaudo
+      (Host {{ bench_git_ssh_host }} -> {{ bench_git_ssh_hostname }})
+      to the git forge, then continue.
+      ------------------------------------------------------------
+      {{ bench_ssh_pubkey_b64.content | b64decode | trim }}
+      ============================================================
+
+- name: Wait until the public key has been registered
+  ansible.builtin.pause:
+    prompt: >-
+      Public key shown above for {{ inventory_hostname }}.
+      Register it on the forge, then press Enter to continue
+      (or Ctrl+C to abort)
+
+- name: Ensure collaudo ~/.ssh directory exists
+  ansible.builtin.file:
+    path: "{{ bench_collaudo_home }}/.ssh"
+    state: directory
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
+    mode: "0700"
+
+- name: Install private key for collaudo
+  ansible.builtin.copy:
+    src: "{{ bench_ssh_key_path }}"
+    dest: "{{ bench_collaudo_home }}/.ssh/{{ bench_ssh_key_remote_name }}"
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
+    mode: "0600"
+
+- name: Install public key for collaudo
+  ansible.builtin.copy:
+    src: "{{ bench_ssh_key_path }}.pub"
+    dest: "{{ bench_collaudo_home }}/.ssh/{{ bench_ssh_key_remote_name }}.pub"
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
+    mode: "0644"
+
+- name: Add SSH config Host entry for the git repo
+  ansible.builtin.blockinfile:
+    path: "{{ bench_collaudo_home }}/.ssh/config"
+    create: true
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
+    mode: "0600"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ bench_git_ssh_host }}"
+    block: |
+      Host {{ bench_git_ssh_host }}
+          User {{ bench_git_ssh_user }}
+          Hostname {{ bench_git_ssh_hostname }}
+          IdentityFile ~/.ssh/{{ bench_ssh_key_remote_name }}
+
+- name: Ensure checkout parent directory exists
+  ansible.builtin.file:
+    path: "{{ bench_git_dest | dirname }}"
+    state: directory
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
+    mode: "0755"
+
+- name: Checkout git repository as collaudo
+  ansible.builtin.git:
+    repo: "{{ bench_git_repo_url }}"
+    dest: "{{ bench_git_dest }}"
+    version: "{{ bench_git_version }}"
+    accept_hostkey: true
+    update: true
+  become: true
+  become_user: "{{ bench_collaudo_user }}"
+  environment:
+    GIT_SSH_COMMAND: "ssh -F {{ bench_collaudo_home }}/.ssh/config"

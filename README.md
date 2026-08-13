@@ -58,6 +58,17 @@ Source files used by the playbook:
 - `utils/dboard` → `/usr/local/bin/dboard` (root, mode 0755)
 - `conf/udev/*.rules` → `/etc/udev/rules.d/`
 
+Optional git checkout as `collaudo` (set in host_vars):
+
+```yaml
+bench_git_repo_url: "git@nome_repo:org/repo.git"
+bench_git_ssh_host: "nome_repo"
+bench_git_ssh_hostname: "github.com"
+bench_git_dest: "/home/collaudo/src/repo"
+```
+
+The playbook generates an SSH key on the control machine, prints the public key, waits for you to register it, installs `~/.ssh/id_<type>_<host>` for `collaudo`, writes a matching `~/.ssh/config` Host entry, then clones the repo.
+
 Then:
 
 ```bash
