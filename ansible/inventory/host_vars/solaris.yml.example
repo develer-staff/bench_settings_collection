@@ -3,6 +3,8 @@
 #   cp solaris.yml.example solaris.yml
 #   ansible-vault encrypt inventory/host_vars/solaris.yml
 #
-# ansible_ssh_pass: "..."   # only if not using SSH keys
-ansible_become_pass: "CHANGE_ME_SUDO_PASSWORD"
-develer_password: "CHANGE_ME_DEVELER_PASSWORD"
+# First bootstrap may use root; afterwards ansible_user is develer (sudo).
+ansible_ssh_pass:    "CHANGE_ME_SSH_PASSWORD"
+ansible_become_pass: "CHANGE_ME_DEVELER_SUDO_PASSWORD"
+develer_password:    "CHANGE_ME_DEVELER_PASSWORD"
+collaudo_password:   "CHANGE_ME_COLLAUDO_PASSWORD"
