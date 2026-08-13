@@ -56,6 +56,11 @@ sudo cp /tmp/insync.repo /etc/yum.repos.d/insync.repo
 sudo dnf install insync -y
 echo "..done"
 
+echo "Extra.."
+mkdir ~/.local/bin
+cp bin/dboard ~/.local/bin/
+echo "..done"
+
 echo -n "Add develer sudoes user"
 sudo useradd -m -G wheel develer
 sudo passwd develer
