@@ -42,4 +42,4 @@ bench_develer_user: develer
 bench_collaudo_user: collaudo
 
 insync_gpg_key_url: https://d2t3ff60b2tol4.cloudfront.net/repomd.xml.key
-insync_repo_baseurl: "http://yum.insync.io/fedora/{{ ansible_distribution_major_version }}/"
+insync_repo_baseurl: "http://yum.insync.io/fedora/{{ ansible_facts['distribution_major_version'] }}/"

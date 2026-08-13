@@ -1,5 +1,2 @@
 .envrc
-
-# Unencrypted Ansible host secrets (commit *.yml.example and vault-encrypted files)
-ansible/inventory/host_vars/*.yml
-!ansible/inventory/host_vars/*.yml.example
+tags
