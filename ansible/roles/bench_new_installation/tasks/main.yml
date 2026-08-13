@@ -1,12 +1,18 @@
 ---
+- name: Set hostname from inventory
+  ansible.builtin.include_tasks: hostname.yml
+
 - name: Install base packages and enable sshd
   ansible.builtin.include_tasks: packages.yml
 
 - name: Create develer and adjust wheel membership
   ansible.builtin.include_tasks: users.yml
 
-- name: Install shell profile, logo, and dboard
-  ansible.builtin.include_tasks: shell.yml
+- name: Install local shell profile and logo
+  ansible.builtin.include_tasks: local_profile.yml
+
+- name: Install local utils (dboard)
+  ansible.builtin.include_tasks: add_utils.yml
 
 - name: Install Docker CE
   ansible.builtin.include_tasks: docker.yml
