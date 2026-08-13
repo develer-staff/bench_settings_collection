@@ -3,13 +3,16 @@
   hosts: benches
   become: true
   pre_tasks:
-    - name: Require per-host develer_password
+    - name: Require per-host passwords
       ansible.builtin.assert:
         that:
           - develer_password is defined
           - develer_password | length > 0
+          - collaudo_password is defined
+          - collaudo_password | length > 0
         fail_msg: >-
-          Set develer_password in inventory/host_vars/{{ inventory_hostname }}.yml
+          Set develer_password and collaudo_password in
+          inventory/host_vars/{{ inventory_hostname }}.yml
           (preferably encrypted with ansible-vault).
   roles:
     - role: bench_new_installation
