@@ -1,0 +1,77 @@
+---
+- name: Ensure system backgrounds directory exists
+  ansible.builtin.file:
+    path: "{{ bench_wallpaper_system_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Install Devel wallpaper system-wide
+  ansible.builtin.copy:
+    src: "{{ bench_wallpaper_src }}"
+    dest: "{{ bench_wallpaper_system_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Ensure dconf local.d directory exists
+  ansible.builtin.file:
+    path: /etc/dconf/db/local.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Set GNOME desktop and lock-screen wallpaper for all users
+  ansible.builtin.copy:
+    dest: /etc/dconf/db/local.d/00-bench-wallpaper
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [org/gnome/desktop/background]
+      picture-uri='file://{{ bench_wallpaper_system_path }}'
+      picture-uri-dark='file://{{ bench_wallpaper_system_path }}'
+      picture-options='zoom'
+
+      [org/gnome/desktop/screensaver]
+      picture-uri='file://{{ bench_wallpaper_system_path }}'
+      picture-options='zoom'
+  notify: Update dconf databases
+
+- name: Ensure GDM dconf profile exists
+  ansible.builtin.copy:
+    dest: /etc/dconf/profile/gdm
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      user-db:user
+      system-db:gdm
+      file-db:/usr/share/gdm/greeter-dconf-defaults
+  notify: Update dconf databases
+
+- name: Ensure dconf gdm.d directory exists
+  ansible.builtin.file:
+    path: /etc/dconf/db/gdm.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Set GNOME GDM login-screen wallpaper
+  ansible.builtin.copy:
+    dest: /etc/dconf/db/gdm.d/00-bench-wallpaper
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      [org/gnome/desktop/background]
+      picture-uri='file://{{ bench_wallpaper_system_path }}'
+      picture-uri-dark='file://{{ bench_wallpaper_system_path }}'
+      picture-options='zoom'
+  notify: Update dconf databases
+
+- name: Apply dconf updates now
+  ansible.builtin.meta: flush_handlers
