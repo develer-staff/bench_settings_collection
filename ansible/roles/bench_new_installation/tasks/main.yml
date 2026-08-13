@@ -1,0 +1,15 @@
+---
+- name: Install base packages and enable sshd
+  ansible.builtin.include_tasks: packages.yml
+
+- name: Create develer and adjust wheel membership
+  ansible.builtin.include_tasks: users.yml
+
+- name: Install shell profile, logo, and dboard
+  ansible.builtin.include_tasks: shell.yml
+
+- name: Install Docker CE
+  ansible.builtin.include_tasks: docker.yml
+
+- name: Install Insync
+  ansible.builtin.include_tasks: insync.yml

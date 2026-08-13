@@ -1,0 +1,11 @@
+---
+- name: Install base packages
+  ansible.builtin.dnf:
+    name: "{{ bench_base_packages }}"
+    state: present
+
+- name: Enable and start sshd
+  ansible.builtin.service:
+    name: sshd
+    state: started
+    enabled: true

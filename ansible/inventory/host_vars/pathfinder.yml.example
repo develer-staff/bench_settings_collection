@@ -1,0 +1,8 @@
+---
+# Copy to pathfinder.yml and fill in, then encrypt:
+#   cp pathfinder.yml.example pathfinder.yml
+#   ansible-vault encrypt inventory/host_vars/pathfinder.yml
+#
+# ansible_ssh_pass: "..."   # only if not using SSH keys
+ansible_become_pass: "CHANGE_ME_SUDO_PASSWORD"
+develer_password: "CHANGE_ME_DEVELER_PASSWORD"

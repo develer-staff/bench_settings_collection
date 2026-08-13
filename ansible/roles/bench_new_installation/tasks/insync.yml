@@ -1,0 +1,19 @@
+---
+- name: Import Insync GPG key
+  ansible.builtin.rpm_key:
+    state: present
+    key: "{{ insync_gpg_key_url }}"
+
+- name: Add Insync yum repository
+  ansible.builtin.yum_repository:
+    name: insync
+    description: insync repo
+    baseurl: "{{ insync_repo_baseurl }}"
+    gpgcheck: true
+    enabled: true
+    file: insync
+
+- name: Install Insync
+  ansible.builtin.dnf:
+    name: insync
+    state: present

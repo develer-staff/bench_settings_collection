@@ -1,0 +1,20 @@
+---
+- name: Ensure develer user exists with wheel group
+  ansible.builtin.user:
+    name: "{{ bench_develer_user }}"
+    groups: wheel
+    append: true
+    create_home: true
+    password: "{{ develer_password | password_hash('sha512') }}"
+    update_password: on_create
+    state: present
+
+- name: Remove collaudo from wheel group
+  ansible.builtin.command:
+    cmd: "gpasswd -d {{ bench_collaudo_user }} wheel"
+  register: collaudo_gpasswd
+  changed_when: collaudo_gpasswd.rc == 0
+  failed_when:
+    - collaudo_gpasswd.rc != 0
+    - "'not a member' not in collaudo_gpasswd.stderr"
+    - "'does not exist' not in collaudo_gpasswd.stderr"
