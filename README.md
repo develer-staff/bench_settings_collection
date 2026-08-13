@@ -57,23 +57,39 @@ Source files used by the playbook:
 - `conf/develer_profile`, `conf/logo` → user homes
 - `utils/dboard` → `/usr/local/bin/dboard` (root, mode 0755)
 - `conf/udev/*.rules` → `/etc/udev/rules.d/`
+- `images/Devel-background-2.png` → desktop + GDM login wallpaper
 
-Optional git checkout as `collaudo` (set in host_vars):
+Optional git checkouts as `collaudo` — define **per host** in `inventory/host_vars/<hostname>.yml`
+(not in the role defaults). Each entry runs `checkout_repo.yml`:
 
 ```yaml
-bench_git_repo_url: "git@nome_repo:org/repo.git"
-bench_git_ssh_host: "nome_repo"
-bench_git_ssh_hostname: "github.com"
-bench_git_dest: "/home/collaudo/src/repo"
+# inventory/host_vars/solaris.yml
+bench_git_repos:
+  - repo_url: "git@electronic_keystop_collaudo:develersrl/electronic_keystop_collaudo.git"
+    ssh_host: "electronic_keystop_collaudo"
+    ssh_hostname: "github.com"
+    dest: "/home/collaudo/src/electronic_keystop_collaudo"
+    version: main
+
+# inventory/host_vars/pathfinder.yml can have a different list
 ```
 
-The playbook generates an SSH key on the control machine, prints the public key, waits for you to register it, installs `~/.ssh/id_<type>_<host>` for `collaudo`, writes a matching `~/.ssh/config` Host entry, then clones the repo.
+For each entry the playbook generates an SSH key, prints the public key, waits for registration, installs `~/.ssh/id_<type>_<ssh_host>` for `collaudo`, writes a matching `~/.ssh/config` Host block, then clones the repo.
 
 Then:
 
 ```bash
 ansible-playbook playbooks/new_installation.yml --ask-vault-pass
 ```
+
+Run a single section with `--tags` (also pass `--limit` if needed):
+
+```bash
+ansible-playbook playbooks/new_installation.yml --ask-vault-pass --tags checkout_repo
+ansible-playbook playbooks/new_installation.yml --ask-vault-pass --tags udev --limit solaris
+```
+
+Available tags: `hostname`, `packages`, `users`, `local_profile`, `wallpaper`, `utils`, `docker`, `insync`, `udev`, `checkout_repo`.
 
 After Docker group membership changes, users must log out and back in (or reboot) for the new groups to apply.
 

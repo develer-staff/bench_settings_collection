@@ -1,28 +1,82 @@
 ---
 - name: Set hostname from inventory
-  ansible.builtin.include_tasks: hostname.yml
+  ansible.builtin.include_tasks:
+    file: hostname.yml
+    apply:
+      tags: [hostname]
+  tags: [hostname]
 
 - name: Install base packages and enable sshd
-  ansible.builtin.include_tasks: packages.yml
+  ansible.builtin.include_tasks:
+    file: packages.yml
+    apply:
+      tags: [packages]
+  tags: [packages]
 
 - name: Create develer and adjust wheel membership
-  ansible.builtin.include_tasks: users.yml
+  ansible.builtin.include_tasks:
+    file: users.yml
+    apply:
+      tags: [users]
+  tags: [users]
 
 - name: Install local shell profile and logo
-  ansible.builtin.include_tasks: local_profile.yml
+  ansible.builtin.include_tasks:
+    file: local_profile.yml
+    apply:
+      tags: [local_profile]
+  tags: [local_profile]
+
+- name: Set desktop and login wallpaper
+  ansible.builtin.include_tasks:
+    file: wallpaper.yml
+    apply:
+      tags: [wallpaper]
+  tags: [wallpaper]
 
 - name: Install system utils into /usr/local/bin
-  ansible.builtin.include_tasks: add_utils.yml
+  ansible.builtin.include_tasks:
+    file: add_utils.yml
+    apply:
+      tags: [utils]
+  tags: [utils]
 
 - name: Install Docker CE
-  ansible.builtin.include_tasks: docker.yml
+  ansible.builtin.include_tasks:
+    file: docker.yml
+    apply:
+      tags: [docker]
+  tags: [docker]
 
 - name: Install Insync
-  ansible.builtin.include_tasks: insync.yml
+  ansible.builtin.include_tasks:
+    file: insync.yml
+    apply:
+      tags: [insync]
+  tags: [insync]
 
 - name: Install udev rules
-  ansible.builtin.include_tasks: install_udev.yml
+  ansible.builtin.include_tasks:
+    file: install_udev.yml
+    apply:
+      tags: [udev]
+  tags: [udev]
 
-- name: Generate SSH key, install for collaudo, checkout repo
-  ansible.builtin.include_tasks: checkout_repo.yml
-  when: bench_git_repo_url | length > 0
+- name: Checkout git repositories as collaudo
+  ansible.builtin.include_tasks:
+    file: checkout_repo.yml
+    apply:
+      tags: [checkout_repo]
+  vars:
+    bench_git_repo_url: "{{ item.repo_url }}"
+    bench_git_ssh_host: "{{ item.ssh_host }}"
+    bench_git_ssh_hostname: "{{ item.ssh_hostname }}"
+    bench_git_ssh_user: "{{ item.ssh_user | default('git') }}"
+    bench_git_dest: "{{ item.dest }}"
+    bench_git_version: "{{ item.version | default('HEAD') }}"
+    bench_ssh_key_type: "{{ item.key_type | default('ed25519') }}"
+    bench_ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/bench_{{ inventory_hostname }}_{{ item.ssh_host }}"
+  loop: "{{ bench_git_repos }}"
+  loop_control:
+    label: "{{ item.ssh_host | default(item.repo_url) }}"
+  tags: [checkout_repo]

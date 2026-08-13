@@ -2,12 +2,17 @@
 - name: Require git SSH host settings
   ansible.builtin.assert:
     that:
-      - bench_git_ssh_host | length > 0
-      - bench_git_ssh_hostname | length > 0
+      - bench_git_repo_url is defined
       - bench_git_repo_url | length > 0
+      - bench_git_ssh_host is defined
+      - bench_git_ssh_host | length > 0
+      - bench_git_ssh_hostname is defined
+      - bench_git_ssh_hostname | length > 0
+      - bench_git_dest is defined
+      - bench_git_dest | length > 0
     fail_msg: >-
-      Set bench_git_repo_url, bench_git_ssh_host and bench_git_ssh_hostname
-      in inventory/host_vars/{{ inventory_hostname }}.yml
+      Each bench_git_repos item needs repo_url, ssh_host, ssh_hostname, dest
+      (host {{ inventory_hostname }}, entry {{ bench_git_ssh_host | default('?') }}).
 
 - name: Resolve collaudo home directory
   ansible.builtin.getent:
@@ -50,24 +55,18 @@
   delegate_to: localhost
   become: false
 
-- name: Show public key to add on the git forge
-  ansible.builtin.debug:
-    msg: |
+- name: Show public key and wait until it has been registered
+  ansible.builtin.pause:
+    prompt: |2
 
       ============================================================
       Add this public SSH key for {{ inventory_hostname }} / collaudo
       (Host {{ bench_git_ssh_host }} -> {{ bench_git_ssh_hostname }})
-      to the git forge, then continue.
+      to the git forge, then press Enter to continue
+      (Ctrl+C to abort).
       ------------------------------------------------------------
       {{ bench_ssh_pubkey_b64.content | b64decode | trim }}
       ============================================================
-
-- name: Wait until the public key has been registered
-  ansible.builtin.pause:
-    prompt: >-
-      Public key shown above for {{ inventory_hostname }}.
-      Register it on the forge, then press Enter to continue
-      (or Ctrl+C to abort)
 
 - name: Ensure collaudo ~/.ssh directory exists
   ansible.builtin.file:

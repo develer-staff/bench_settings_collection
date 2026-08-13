@@ -14,5 +14,6 @@
           Set develer_password and collaudo_password in
           inventory/host_vars/{{ inventory_hostname }}.yml
           (preferably encrypted with ansible-vault).
+      tags: [always]
   roles:
     - role: bench_new_installation
