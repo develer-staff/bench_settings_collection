@@ -1,5 +1,5 @@
 ---
-- name: Ensure develer user exists with wheel group
+- name: Ensure develer exists as sudo (wheel) user
   ansible.builtin.user:
     name: "{{ bench_develer_user }}"
     groups: wheel
@@ -9,7 +9,15 @@
     update_password: on_create
     state: present
 
-- name: Remove collaudo from wheel group
+- name: Ensure collaudo exists without sudo
+  ansible.builtin.user:
+    name: "{{ bench_collaudo_user }}"
+    create_home: true
+    password: "{{ collaudo_password | password_hash('sha512') }}"
+    update_password: on_create
+    state: present
+
+- name: Remove collaudo from wheel if present
   ansible.builtin.command:
     cmd: "gpasswd -d {{ bench_collaudo_user }} wheel"
   register: collaudo_gpasswd
