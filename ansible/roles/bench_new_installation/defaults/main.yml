@@ -6,7 +6,6 @@ bench_shell_users:
   - collaudo
 
 bench_base_packages:
-  - openssh-server
   - openssl
   - git
   - git-lfs
