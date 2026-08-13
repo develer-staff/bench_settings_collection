@@ -1,6 +1,13 @@
 ---
 bench_repo_root: "{{ playbook_dir | dirname | dirname }}"
 
+# Inventory host name (e.g. solaris, pathfinder). Override per-host if needed.
+bench_hostname: "{{ inventory_hostname }}"
+
+bench_local_profile_users:
+  - develer
+  - collaudo
+
 bench_shell_users:
   - develer
   - collaudo

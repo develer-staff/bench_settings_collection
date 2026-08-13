@@ -1,0 +1,4 @@
+---
+- name: Set system hostname from inventory
+  ansible.builtin.hostname:
+    name: "{{ bench_hostname }}"
