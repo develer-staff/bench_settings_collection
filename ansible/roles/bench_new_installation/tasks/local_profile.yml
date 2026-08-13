@@ -1,0 +1,55 @@
+---
+- name: Load passwd database
+  ansible.builtin.getent:
+    database: passwd
+
+- name: Build map of user to home directory
+  ansible.builtin.set_fact:
+    bench_user_homes: >-
+      {{
+        bench_user_homes | default({})
+        | combine({item: ansible_facts.getent_passwd[item][4]})
+      }}
+  loop: "{{ bench_local_profile_users }}"
+  when: item in ansible_facts.getent_passwd
+
+- name: Require develer and collaudo for local profile
+  ansible.builtin.assert:
+    that:
+      - item in bench_user_homes
+    fail_msg: >-
+      User {{ item }} does not exist; create users before local_profile
+      (expected: {{ bench_local_profile_users | join(', ') }}).
+  loop: "{{ bench_local_profile_users }}"
+
+- name: Copy develer_profile to user homes
+  ansible.builtin.copy:
+    src: "{{ bench_repo_root }}/conf/develer_profile"
+    dest: "{{ bench_user_homes[item] }}/.develer_profile"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0644"
+  loop: "{{ bench_local_profile_users }}"
+
+- name: Copy logo to user homes
+  ansible.builtin.copy:
+    src: "{{ bench_repo_root }}/conf/logo"
+    dest: "{{ bench_user_homes[item] }}/.logo"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0644"
+  loop: "{{ bench_local_profile_users }}"
+
+- name: Ensure .bash_profile sources develer_profile
+  ansible.builtin.blockinfile:
+    path: "{{ bench_user_homes[item] }}/.bash_profile"
+    create: true
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: "0644"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK develer_profile"
+    block: |
+      if [ -f .develer_profile ]; then
+          . ~/.develer_profile
+      fi
+  loop: "{{ bench_local_profile_users }}"
