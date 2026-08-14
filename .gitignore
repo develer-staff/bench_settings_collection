@@ -1,2 +1,3 @@
 .envrc
 tags
+inventory/host_vars/*
