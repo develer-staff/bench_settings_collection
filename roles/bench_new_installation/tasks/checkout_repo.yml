@@ -32,11 +32,12 @@
       - -f
       - "{{ local_tmpdir.path }}/{{ bench_ssh_key_filename }}"
       - -N
-      - "{{ bench_repo_checkout_passphrase | default('') }}"
+      - "{{ bench_repo_checkout_passphrase }}"
       - -C
       - "collaudo@{{ inventory_hostname }}"
     creates: "{{ local_tmpdir.path }}/{{ bench_ssh_key_filename }}"
   delegate_to: localhost
+  when: bench_repo_checkout_passphrase | length > 0
   become: false
 
 - name: Read public key from control machine
@@ -138,8 +139,28 @@
   become_user: "{{ bench_collaudo_user }}"
   register: git_checkout
 
+
 - name: Checkout info
   ansible.builtin.debug:
-    msg: "Checkout completed, last commit: {{ git_checkout.after }}"
+    msg: "Checkout completed, last commit: {{ git_checkout.after }}, origin={{ bench_repo_origin_url }}"
 
-    #repo: "{{ bench_repo_name }}:{{ bench_repo_organization }}/{{ bench_repo_name }}.git"
+- name: Set origin remote after checkout
+  ansible.builtin.command:
+    argv:
+      - git
+      - -C
+      - "{{ bench_repo_dest }}"
+      - remote
+      - set-url
+      - origin
+      - "{{ bench_repo_name }}:{{ bench_repo_organization }}/{{ bench_repo_name }}.git"
+  become: true
+  become_user: "{{ bench_collaudo_user }}"
+  changed_when: true
+  when: bench_repo_origin_url | length > 0
+
+- name: Remove temporary key file
+  ansible.builtin.file:
+    path: "/home/collaudo/.ssh/id_ed25519_ansible_deploy_key_private"
+    state: absent
+  no_log: false
