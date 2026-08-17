@@ -1,25 +1,30 @@
 ---
+bench_users:
+  - develer
+  - collaudo
+
+bench_develer_user: develer
+bench_collaudo_user: collaudo
+
 # Repo root (playbooks/ lives one level under the repository root).
 bench_repo_root: "{{ playbook_dir | dirname }}"
-
-bench_profile_src: "{{ bench_repo_root }}/conf/develer_profile"
-bench_logo_src: "{{ bench_repo_root }}/conf/logo"
-bench_dboard_src: "{{ bench_repo_root }}/utils/dboard"
-bench_udev_src: "{{ bench_repo_root }}/conf/udev"
-bench_wallpaper_src: "{{ bench_repo_root }}/images/Devel-background-2.png"
-bench_wallpaper_system_dir: /usr/share/backgrounds/devel
-bench_wallpaper_system_path: "{{ bench_wallpaper_system_dir }}/Devel-background-2.png"
 
 # Inventory host name (e.g. solaris, pathfinder). Override per-host if needed.
 bench_hostname: "{{ inventory_hostname }}"
 
-bench_local_profile_users:
-  - develer
-  - collaudo
+# Local profile settings
+bench_profile_src: "{{ bench_repo_root }}/conf/develer_profile"
+bench_logo_src: "{{ bench_repo_root }}/conf/logos/{{inventory_hostname}}.logo"
 
-bench_shell_users:
-  - develer
-  - collaudo
+# Binary utils
+bench_dboard_src: "{{ bench_repo_root }}/utils/dboard"
+
+# System configuration
+bench_udev_src: "{{ bench_repo_root }}/conf/udev"
+
+## Wallpaper
+bench_wallpaper_src: "{{ bench_repo_root }}/images/Devel-background-2.png"
+bench_wallpaper_system_dir: /usr/share/backgrounds/devel
 
 bench_base_packages:
   - openssl
@@ -30,6 +35,9 @@ bench_base_packages:
   - python3.10
   - python3.10-devel
   - gcc
+  - libsecret
+  - seahorse
+  - gnome-keyring
 
 bench_docker_packages:
   - docker-ce
@@ -38,27 +46,8 @@ bench_docker_packages:
   - docker-buildx-plugin
   - docker-compose-plugin
 
-bench_docker_users:
-  - develer
-  - collaudo
-
-bench_develer_user: develer
-bench_collaudo_user: collaudo
-
-# Git checkouts as collaudo (SSH). Define per-host in inventory/host_vars/<host>.yml
-# (overrides this empty default). Each entry runs checkout_repo.yml.
-#
-# inventory/host_vars/solaris.yml:
-#   bench_git_repos:
-#     - repo_url: "git@nome_repo:org/repo.git"
-#       ssh_host: "nome_repo"
-#       ssh_hostname: "github.com"
-#       dest: "/home/collaudo/src/repo"
-#       version: main          # optional, default HEAD
-#       ssh_user: git          # optional, default git
-#       key_type: ed25519      # optional
-bench_ssh_key_type: ed25519
-bench_git_repos: []
-
 insync_gpg_key_url: https://d2t3ff60b2tol4.cloudfront.net/repomd.xml.key
 insync_repo_baseurl: "http://yum.insync.io/fedora/{{ ansible_facts['distribution_major_version'] }}/"
+
+# Git checkouts as collaudo repos and settings are  defined in inventory/host_vars/<host>.yml
+

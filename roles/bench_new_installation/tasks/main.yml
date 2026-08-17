@@ -41,6 +41,13 @@
       tags: [utils]
   tags: [utils]
 
+- name: Store secrets in desktop keyring
+  ansible.builtin.include_tasks:
+    file: keyring.yml
+    apply:
+      tags: [keyring]
+  tags: [keyring]
+
 - name: Install Docker CE
   ansible.builtin.include_tasks:
     file: docker.yml
@@ -73,13 +80,14 @@
     bench_repo_organization: "{{ item.repo_organization }}"
     bench_repo_hostname: "{{ item.repo_hostname | default('github.com') }}"
     bench_repo_username: "{{ item.repo_username | default('git') }}"
-    bench_repo_dest: "{{ item.repo_dest | default('/home/collaudo/src/') }}"
+    bench_repo_dest: "{{ item.repo_dest | default('/home/collaudo/src/') }}/{{item.repo_name}}"
     bench_repo_checkout_branch: "{{ item.repo_checkout_branch | default('main') }}"
     bench_ssh_key_type: "{{ item.repo_ssh_key_type | default('ed25519') }}"
     bench_ssh_key_filename: "id_{{ item.repo_ssh_key_type | default('ed25519') }}_{{ item.repo_name }}"
     bench_repo_checkout_passphrase: "{{ repo_checkout_passphrase | default(inventory_hostname ~ '-macchia') }}"
     bench_ansible_deploy_key_private: "{{item.ansible_deploy_key_private}}"
     bench_ansible_deploy_key_public: "{{item.ansible_deploy_key_public}}"
+    bench_repo_origin_url: "{{ item.repo_origin_url | default(item.repo_username | default('git') ~ '@' ~ item.repo_name ~ ':' ~ item.repo_organization ~ '/' ~ item.repo_name ~ '.git') }}"
   loop: "{{ bench_git_repos }}"
   loop_control:
     label: "{{ inventory_hostname }}::{{ item.repo_organization }}/{{ item.repo_name }}.git"

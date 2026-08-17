@@ -10,7 +10,7 @@
         bench_user_homes | default({})
         | combine({item: ansible_facts.getent_passwd[item][4]})
       }}
-  loop: "{{ bench_local_profile_users }}"
+  loop: "{{ bench_users }}"
   when: item in ansible_facts.getent_passwd
 
 - name: Require develer and collaudo for local profile
@@ -19,8 +19,8 @@
       - item in bench_user_homes
     fail_msg: >-
       User {{ item }} does not exist; create users before local_profile
-      (expected: {{ bench_local_profile_users | join(', ') }}).
-  loop: "{{ bench_local_profile_users }}"
+      (expected: {{ bench_users | join(', ') }}).
+  loop: "{{ bench_users }}"
 
 - name: Copy develer_profile to user homes
   ansible.builtin.copy:
@@ -29,7 +29,7 @@
     owner: "{{ item }}"
     group: "{{ item }}"
     mode: "0644"
-  loop: "{{ bench_local_profile_users }}"
+  loop: "{{ bench_users }}"
 
 - name: Copy logo to user homes
   ansible.builtin.copy:
@@ -38,7 +38,7 @@
     owner: "{{ item }}"
     group: "{{ item }}"
     mode: "0644"
-  loop: "{{ bench_local_profile_users }}"
+  loop: "{{ bench_users }}"
 
 - name: Ensure .bash_profile sources develer_profile
   ansible.builtin.blockinfile:
@@ -52,4 +52,4 @@
       if [ -f .develer_profile ]; then
           . ~/.develer_profile
       fi
-  loop: "{{ bench_local_profile_users }}"
+  loop: "{{ bench_users }}"

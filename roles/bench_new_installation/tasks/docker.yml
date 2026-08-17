@@ -28,4 +28,4 @@
     name: "{{ item }}"
     groups: docker
     append: true
-  loop: "{{ bench_docker_users }}"
+  loop: "{{ bench_users }}"
