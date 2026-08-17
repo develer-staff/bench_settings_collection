@@ -1,77 +1,43 @@
----
-- name: Ensure system backgrounds directory exists
+- name: Copy background wallpaper
+  ansible.builtin.copy:
+    src: "{{ bench_repo_root }}/images/{{bench_wallpaper_src_jxl}}"
+    dest: "{{ bench_wallpaper_system_path }}/default.jxl"
+    mode: '0644'
+  become: true
+
+- name: Copy background wallpaper
+  ansible.builtin.copy:
+    src: "{{ bench_repo_root }}/images/{{bench_wallpaper_src_jxl}}"
+    dest: "{{ bench_wallpaper_system_path }}/images/default.jxl"
+    mode: '0644'
+  become: true
+
+# --- Desktop background (pcmanfm, for user) ---
+- name: Create pcmanfn configuration dir
   ansible.builtin.file:
-    path: "{{ bench_wallpaper_system_dir }}"
+    path: "/home/{{item }}/.config/pcmanfm/LXDE"
     state: directory
-    owner: root
-    group: root
-    mode: "0755"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: '0755'
+  loop: "{{bench_users}}"
 
-- name: Install Devel wallpaper system-wide
+- name: Imposta lo sfondo del desktop nel file di configurazione
   ansible.builtin.copy:
-    src: "{{ bench_wallpaper_src }}"
-    dest: "{{ bench_wallpaper_system_path }}"
-    owner: root
-    group: root
-    mode: "0644"
-
-- name: Ensure dconf local.d directory exists
-  ansible.builtin.file:
-    path: /etc/dconf/db/local.d
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
-
-- name: Set GNOME desktop and lock-screen wallpaper for all users
-  ansible.builtin.copy:
-    dest: /etc/dconf/db/local.d/00-bench-wallpaper
-    owner: root
-    group: root
-    mode: "0644"
+    dest: "/home/{{ item }}/.config/pcmanfm/LXDE/desktop-items-0.conf"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: '0644'
     content: |
-      [org/gnome/desktop/background]
-      picture-uri='file://{{ bench_wallpaper_system_path }}'
-      picture-uri-dark='file://{{ bench_wallpaper_system_path }}'
-      picture-options='zoom'
-
-      [org/gnome/desktop/screensaver]
-      picture-uri='file://{{ bench_wallpaper_system_path }}'
-      picture-options='zoom'
-  notify: Update dconf databases
-
-- name: Ensure GDM dconf profile exists
-  ansible.builtin.copy:
-    dest: /etc/dconf/profile/gdm
-    owner: root
-    group: root
-    mode: "0644"
-    content: |
-      user-db:user
-      system-db:gdm
-      file-db:/usr/share/gdm/greeter-dconf-defaults
-  notify: Update dconf databases
-
-- name: Ensure dconf gdm.d directory exists
-  ansible.builtin.file:
-    path: /etc/dconf/db/gdm.d
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
-
-- name: Set GNOME GDM login-screen wallpaper
-  ansible.builtin.copy:
-    dest: /etc/dconf/db/gdm.d/00-bench-wallpaper
-    owner: root
-    group: root
-    mode: "0644"
-    content: |
-      [org/gnome/desktop/background]
-      picture-uri='file://{{ bench_wallpaper_system_path }}'
-      picture-uri-dark='file://{{ bench_wallpaper_system_path }}'
-      picture-options='zoom'
-  notify: Update dconf databases
-
-- name: Apply dconf updates now
-  ansible.builtin.meta: flush_handlers
+      [*]
+      wallpaper_mode=crop
+      wallpaper=/usr/share/backgrounds/images/default.jxl
+      desktop_bg=#000000
+      desktop_fg=#ffffff
+      desktop_shadow=#000000
+      show_wm_menu=0
+      sort=mtime;ascending;
+      show_documents=0
+      show_trash=1
+      show_mounts=0
+  loop: "{{bench_users}}"

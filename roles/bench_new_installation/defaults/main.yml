@@ -23,8 +23,9 @@ bench_dboard_src: "{{ bench_repo_root }}/utils/dboard"
 bench_udev_src: "{{ bench_repo_root }}/conf/udev"
 
 ## Wallpaper
-bench_wallpaper_src: "{{ bench_repo_root }}/images/Devel-background-2.png"
-bench_wallpaper_system_dir: /usr/share/backgrounds/devel
+bench_wallpaper_src_png: "Devel-background-2.png"
+bench_wallpaper_src_jxl: "Devel-background-2.jxl"
+bench_wallpaper_system_path: /usr/share/backgrounds/
 
 bench_base_packages:
   - openssl
