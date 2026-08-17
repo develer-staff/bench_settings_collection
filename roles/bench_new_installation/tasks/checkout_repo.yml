@@ -2,33 +2,24 @@
 - name: Require git SSH host settings
   ansible.builtin.assert:
     that:
-      - bench_git_repo_url is defined
-      - bench_git_repo_url | length > 0
-      - bench_git_ssh_host is defined
-      - bench_git_ssh_host | length > 0
-      - bench_git_ssh_hostname is defined
-      - bench_git_ssh_hostname | length > 0
-      - bench_git_dest is defined
-      - bench_git_dest | length > 0
+      - bench_repo_name is defined
+      - bench_repo_name | length > 0
+      - bench_repo_organization is defined
+      - bench_repo_organization | length > 0
     fail_msg: >-
-      Each bench_git_repos item needs repo_url, ssh_host, ssh_hostname, dest
-      (host {{ inventory_hostname }}, entry {{ bench_git_ssh_host | default('?') }}).
+      Each bench_git_repos item needs repo_name, repo_organization
+      (host {{ inventory_hostname }}, entry {{ bench_repo_name | default('?') }}).
 
 - name: Resolve collaudo home directory
   ansible.builtin.getent:
     database: passwd
     key: "{{ bench_collaudo_user }}"
 
-- name: Set collaudo path facts
-  ansible.builtin.set_fact:
-    bench_collaudo_home: "{{ ansible_facts.getent_passwd[bench_collaudo_user][4] }}"
-    bench_ssh_key_remote_name: "id_{{ bench_ssh_key_type }}_{{ bench_git_ssh_host }}"
-
-- name: Ensure local SSH key directory exists
-  ansible.builtin.file:
-    path: "{{ bench_ssh_key_path | dirname }}"
+- name: Tempdir to store generated key pair files
+  ansible.builtin.tempfile:
     state: directory
-    mode: "0700"
+    suffix: "{{ bench_repo_name }}"
+  register: local_tmpdir
   delegate_to: localhost
   become: false
 
@@ -39,18 +30,18 @@
       - -t
       - "{{ bench_ssh_key_type }}"
       - -f
-      - "{{ bench_ssh_key_path }}"
+      - "{{ local_tmpdir.path }}/{{ bench_ssh_key_filename }}"
       - -N
-      - ""
+      - "{{ bench_repo_checkout_passphrase | default('') }}"
       - -C
-      - "collaudo@{{ inventory_hostname }}-{{ bench_git_ssh_host }}"
-    creates: "{{ bench_ssh_key_path }}"
+      - "collaudo@{{ inventory_hostname }}"
+    creates: "{{ local_tmpdir.path }}/{{ bench_ssh_key_filename }}"
   delegate_to: localhost
   become: false
 
 - name: Read public key from control machine
   ansible.builtin.slurp:
-    src: "{{ bench_ssh_key_path }}.pub"
+    src: "{{ local_tmpdir.path }}/{{ bench_ssh_key_filename }}.pub"
   register: bench_ssh_pubkey_b64
   delegate_to: localhost
   become: false
@@ -61,16 +52,24 @@
 
       ============================================================
       Add this public SSH key for {{ inventory_hostname }} / collaudo
-      (Host {{ bench_git_ssh_host }} -> {{ bench_git_ssh_hostname }})
+
+      {{bench_repo_username}}@{{bench_repo_hostname}}{{ bench_repo_organization }}/{{ bench_repo_name }}.git
+
+      Go to, and add the public key, remember the deployed repo is whit NO WRITE ACCESS!
+
+      https://github.com/{{bench_repo_organization}}/{{bench_repo_name}}/settings/keys
+
       to the git forge, then press Enter to continue
       (Ctrl+C to abort).
       ------------------------------------------------------------
+
       {{ bench_ssh_pubkey_b64.content | b64decode | trim }}
+
       ============================================================
 
 - name: Ensure collaudo ~/.ssh directory exists
   ansible.builtin.file:
-    path: "{{ bench_collaudo_home }}/.ssh"
+    path: "/home/{{ bench_collaudo_user }}/.ssh"
     state: directory
     owner: "{{ bench_collaudo_user }}"
     group: "{{ bench_collaudo_user }}"
@@ -78,50 +77,69 @@
 
 - name: Install private key for collaudo
   ansible.builtin.copy:
-    src: "{{ bench_ssh_key_path }}"
-    dest: "{{ bench_collaudo_home }}/.ssh/{{ bench_ssh_key_remote_name }}"
+    src: "{{ local_tmpdir.path }}/{{ bench_ssh_key_filename }}"
+    dest: "/home/{{ bench_collaudo_user }}/.ssh/{{ bench_ssh_key_filename }}"
     owner: "{{ bench_collaudo_user }}"
     group: "{{ bench_collaudo_user }}"
     mode: "0600"
 
 - name: Install public key for collaudo
   ansible.builtin.copy:
-    src: "{{ bench_ssh_key_path }}.pub"
-    dest: "{{ bench_collaudo_home }}/.ssh/{{ bench_ssh_key_remote_name }}.pub"
+    src: "{{ local_tmpdir.path }}/{{ bench_ssh_key_filename }}.pub"
+    dest: "/home/{{ bench_collaudo_user }}/.ssh/{{ bench_ssh_key_filename }}.pub"
     owner: "{{ bench_collaudo_user }}"
     group: "{{ bench_collaudo_user }}"
     mode: "0644"
 
 - name: Add SSH config Host entry for the git repo
   ansible.builtin.blockinfile:
-    path: "{{ bench_collaudo_home }}/.ssh/config"
+    path: "/home/{{ bench_collaudo_user }}/.ssh/config"
     create: true
     owner: "{{ bench_collaudo_user }}"
     group: "{{ bench_collaudo_user }}"
     mode: "0600"
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ bench_git_ssh_host }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ bench_repo_name }}"
     block: |
-      Host {{ bench_git_ssh_host }}
-          User {{ bench_git_ssh_user }}
-          Hostname {{ bench_git_ssh_hostname }}
-          IdentityFile ~/.ssh/{{ bench_ssh_key_remote_name }}
+      Host {{ bench_repo_name }}
+          User {{ bench_repo_username }}
+          Hostname {{ bench_repo_hostname }}
+          IdentityFile ~/.ssh/{{ bench_ssh_key_filename }}
 
 - name: Ensure checkout parent directory exists
   ansible.builtin.file:
-    path: "{{ bench_git_dest | dirname }}"
+    path: "{{ bench_repo_dest }}"
     state: directory
     owner: "{{ bench_collaudo_user }}"
     group: "{{ bench_collaudo_user }}"
     mode: "0755"
 
-- name: Checkout git repository as collaudo
+- name: Esegui questa azione solo se la directory è stata appena creata
+  ansible.builtin.debug:
+    msg: "{{ bench_repo_name }}:{{ bench_repo_organization }}/{{ bench_repo_name }}.git\n {{ bench_repo_dest }}"
+
+- name: Install private key for collaudo
+  ansible.builtin.copy:
+    content: "{{ bench_ansible_deploy_key_private }}"
+    dest: "/home/collaudo/.ssh/id_ed25519_ansible_deploy_key_private"
+    owner: collaudo
+    group: collaudo
+    mode: "0600"
+  no_log: false
+
+- name: Checkout Repo
   ansible.builtin.git:
-    repo: "{{ bench_git_repo_url }}"
-    dest: "{{ bench_git_dest }}"
-    version: "{{ bench_git_version }}"
+    dest: "{{ bench_repo_dest }}"
+    repo: "{{ bench_repo_url_for_checkout }}"
+    version: "{{ bench_repo_checkout_branch }}"
     accept_hostkey: true
     update: true
+    key_file: "/home/{{ bench_collaudo_user }}/.ssh/id_ed25519_ansible_deploy_key_private"
   become: true
   become_user: "{{ bench_collaudo_user }}"
-  environment:
-    GIT_SSH_COMMAND: "ssh -F {{ bench_collaudo_home }}/.ssh/config"
+  register: git_checkout
+
+- name: Checkout info
+  ansible.builtin.debug:
+    msg: "Checkout completed, last commit: {{ git_checkout.after }}"
+
+    #repo: "{{ bench_repo_name }}:{{ bench_repo_organization }}/{{ bench_repo_name }}.git"

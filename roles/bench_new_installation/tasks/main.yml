@@ -6,7 +6,7 @@
       tags: [hostname]
   tags: [hostname]
 
-- name: Install base packages and enable sshd
+- name: Install base packages
   ansible.builtin.include_tasks:
     file: packages.yml
     apply:
@@ -68,15 +68,19 @@
     apply:
       tags: [checkout_repo]
   vars:
-    bench_git_repo_url: "{{ item.repo_url }}"
-    bench_git_ssh_host: "{{ item.ssh_host }}"
-    bench_git_ssh_hostname: "{{ item.ssh_hostname }}"
-    bench_git_ssh_user: "{{ item.ssh_user | default('git') }}"
-    bench_git_dest: "{{ item.dest }}"
-    bench_git_version: "{{ item.version | default('HEAD') }}"
-    bench_ssh_key_type: "{{ item.key_type | default('ed25519') }}"
-    bench_ssh_key_path: "{{ lookup('env', 'HOME') }}/.ssh/bench_{{ inventory_hostname }}_{{ item.ssh_host }}"
+    bench_repo_url_for_checkout: "{{item.repo_url_for_checkout}}"
+    bench_repo_name: "{{ item.repo_name }}"
+    bench_repo_organization: "{{ item.repo_organization }}"
+    bench_repo_hostname: "{{ item.repo_hostname | default('github.com') }}"
+    bench_repo_username: "{{ item.repo_username | default('git') }}"
+    bench_repo_dest: "{{ item.repo_dest | default('/home/collaudo/src/') }}"
+    bench_repo_checkout_branch: "{{ item.repo_checkout_branch | default('main') }}"
+    bench_ssh_key_type: "{{ item.repo_ssh_key_type | default('ed25519') }}"
+    bench_ssh_key_filename: "id_{{ item.repo_ssh_key_type | default('ed25519') }}_{{ item.repo_name }}"
+    bench_repo_checkout_passphrase: "{{ repo_checkout_passphrase | default(inventory_hostname ~ '-macchia') }}"
+    bench_ansible_deploy_key_private: "{{item.ansible_deploy_key_private}}"
+    bench_ansible_deploy_key_public: "{{item.ansible_deploy_key_public}}"
   loop: "{{ bench_git_repos }}"
   loop_control:
-    label: "{{ item.ssh_host | default(item.repo_url) }}"
+    label: "{{ inventory_hostname }}::{{ item.repo_organization }}/{{ item.repo_name }}.git"
   tags: [checkout_repo]
