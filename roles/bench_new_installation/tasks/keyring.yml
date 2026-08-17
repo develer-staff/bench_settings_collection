@@ -1,0 +1,68 @@
+- name: Temp Out service pass files
+  ansible.builtin.file:
+    path: "/home/{{ bench_collaudo_user }}/.local/pass/"
+    state: directory
+    mode: '0755'
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
+
+- name: Temp external service pass files
+  ansible.builtin.file:
+    path: "/home/{{ bench_collaudo_user }}/.local/pass/{{item.attributes}} {{ item.secret }}"
+    state: touch
+    mode: '0644'
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
+  loop: "{{ bench_keyring_passwords }}"
+
+#- name: Configure gnome keyring autostart
+#  ansible.builtin.file:
+#    path: "/home/{{ bench_collaudo_user }}/.config/autostart"
+#    state: directory
+#    owner: "{{ bench_collaudo_user }}"
+#    group: "{{ bench_collaudo_user }}"
+#    mode: '0755'
+#  become: true
+#  become_user: "{{ bench_collaudo_user }}"
+#
+#- name: Configure gnome-keyring-daemon autostart
+#  ansible.builtin.copy:
+#    dest: "/home/{{ bench_collaudo_user }}/.config/autostart/gnome-keyring.desktop"
+#    owner: "{{ bench_collaudo_user }}"
+#    group: "{{ bench_collaudo_user }}"
+#    mode: '0644'
+#    content: |
+#      [Desktop Entry]
+#      Type=Application
+#      Name=GNOME Keyring
+#      Exec=/usr/bin/gnome-keyring-daemon --start --components=secrets
+#      X-GNOME-Autostart-enabled=true
+#  become: true
+#  become_user: "{{ bench_collaudo_user }}"
+#
+#- name: Update database
+#  ansible.builtin.command: update-desktop-database /home/{{ bench_collaudo_user }}/.local/share/applications/
+#  become: true
+#  become_user: "{{ bench_collaudo_user }}"
+#  changed_when: false
+#
+#- name: Check if entries exsist
+#  ansible.builtin.command: "secret-tool lookup {{ item.attributes }}"
+#  loop: "{{ bench_keyring_passwords }}"
+#  register: lookup_result
+#  changed_when: false
+#  failed_when: false
+#  no_log: false
+#  become: true
+#  become_user: "{{ bench_collaudo_user }}"
+#
+#- name: Insert entry if it dosn't exsist
+#  ansible.builtin.shell: "secret-tool store --label=\"{{ item.item.label }}\" {{ item.item.attributes }}"
+#  args:
+#    stdin: "{{ item.item.secret }}"
+#  loop: "{{ lookup_result.results }}"
+#  when: item.rc != 0
+#  become: true
+#  become_user: "{{ bench_collaudo_user }}"
+#  changed_when: true
+#  no_log: false
