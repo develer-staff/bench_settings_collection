@@ -1,0 +1,51 @@
+---
+- name: Add Tailscale yum repository
+  ansible.builtin.get_url:
+    url: "{{ bench_tailscale_repo_url }}"
+    dest: /etc/yum.repos.d/tailscale.repo
+    mode: "0644"
+
+- name: Install Tailscale
+  ansible.builtin.dnf:
+    name: tailscale
+    state: present
+
+- name: Enable and start tailscaled
+  ansible.builtin.service:
+    name: tailscaled
+    state: started
+    enabled: true
+
+- name: Warn that the machine may need admin approval
+  ansible.builtin.pause:
+    prompt: |2
+
+      ============================================================
+
+      Log in with admin user and "Approve the added device"
+
+        https://login.tailscale.com/admin/machines
+
+      "tailscale up" needs approval to continue
+
+      (Ctrl+C per annullare)
+      ============================================================
+  when:
+    - bench_tailscale_auth_key is defined
+    - bench_tailscale_auth_key | length > 0
+
+- name: Bring Tailscale up with auth key
+  ansible.builtin.command:
+    argv: "{{ ['tailscale', 'up', '--auth-key=' ~ bench_tailscale_auth_key] + bench_tailscale_up_args }}"
+  register: bench_tailscale_up
+  changed_when: >-
+    'Success' in (bench_tailscale_up.stdout | default(''))
+    or bench_tailscale_up.rc == 0
+  failed_when:
+    - bench_tailscale_up.rc != 0
+    - "'already' not in (bench_tailscale_up.stderr | default('') | lower)"
+    - "'already' not in (bench_tailscale_up.stdout | default('') | lower)"
+  no_log: true
+  when:
+    - bench_tailscale_auth_key is defined
+    - bench_tailscale_auth_key | length > 0

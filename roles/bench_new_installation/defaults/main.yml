@@ -49,5 +49,11 @@ bench_docker_packages:
 insync_gpg_key_url: https://d2t3ff60b2tol4.cloudfront.net/repomd.xml.key
 insync_repo_baseurl: "http://yum.insync.io/fedora/{{ ansible_facts['distribution_major_version'] }}/"
 
+# Tailscale (set bench_tailscale_auth_key in host_vars to auto-join)
+bench_tailscale_repo_url: https://pkgs.tailscale.com/stable/fedora/tailscale.repo
+# bench_tailscale_auth_key: "" # defined in inventory
+# e.g. bench_tailscale_up_args: ["--ssh", "--accept-routes"]
+bench_tailscale_up_args: []
+
 # Git checkouts as collaudo repos and settings are  defined in inventory/host_vars/<host>.yml
 

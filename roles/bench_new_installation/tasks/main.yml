@@ -62,6 +62,13 @@
       tags: [insync]
   tags: [insync]
 
+- name: Install Tailscale
+  ansible.builtin.include_tasks:
+    file: tailscale.yml
+    apply:
+      tags: [tailscale]
+  tags: [tailscale]
+
 - name: Install udev rules
   ansible.builtin.include_tasks:
     file: install_udev.yml
