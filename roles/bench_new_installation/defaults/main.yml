@@ -47,6 +47,50 @@ bench_docker_packages:
   - docker-buildx-plugin
   - docker-compose-plugin
 
+# Packages to drop on LXDE benches (office, games, mail, chat, media not needed).
+# Override/extend in host_vars if a host still needs one of these.
+bench_lxde_remove_packages:
+  - abiword
+  - gnumeric
+  - claws-mail
+  - thunderbird
+  - sylpheed
+  - pidgin
+  - hexchat
+  - transmission
+  - transmission-gtk
+  - asunder
+  - audacious
+  - totem
+  - rhythmbox
+  - cheese
+  - gimp
+  - inkscape
+  - osmo
+  - gnome-games
+  - aisleriot
+  - quadrapassel
+  - iagno
+  - gnome-mines
+  - gnome-sudoku
+  - simple-scan
+  - orca
+  - speech-dispatcher
+  - brasero
+  - shotwell
+  - gnome-maps
+  - gnome-weather
+  - gnome-clocks
+  - gnome-contacts
+  - gnome-calendar
+  - evolution
+  - fedora-bookmarks
+  - abrt
+  - abrt-desktop
+  - abrt-gui
+  - setroubleshoot
+  - setroubleshoot-plugins
+
 insync_gpg_key_url: https://d2t3ff60b2tol4.cloudfront.net/repomd.xml.key
 insync_repo_baseurl: "http://yum.insync.io/fedora/{{ ansible_facts['distribution_major_version'] }}/"
 

@@ -6,13 +6,6 @@
       tags: [hostname]
   tags: [hostname]
 
-- name: Install base packages
-  ansible.builtin.include_tasks:
-    file: packages.yml
-    apply:
-      tags: [packages]
-  tags: [packages]
-
 - name: Create develer and adjust wheel membership
   ansible.builtin.include_tasks:
     file: users.yml
@@ -40,6 +33,20 @@
     apply:
       tags: [utils]
   tags: [utils]
+
+- name: Remove unused LXDE packages
+  ansible.builtin.include_tasks:
+    file: lxde_cleanup.yml
+    apply:
+      tags: [lxde_cleanup, packages]
+  tags: [lxde_cleanup, packages]
+
+- name: Install base packages
+  ansible.builtin.include_tasks:
+    file: packages.yml
+    apply:
+      tags: [packages]
+  tags: [packages]
 
 - name: Store secrets in desktop keyring
   ansible.builtin.include_tasks:

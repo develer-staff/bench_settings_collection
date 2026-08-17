@@ -1,0 +1,9 @@
+---
+# Remove desktop bloat not needed on LXDE test-bench PCs.
+# List is overridable via bench_lxde_remove_packages in host_vars/group_vars.
+
+- name: Remove unused LXDE / desktop packages
+  ansible.builtin.dnf:
+    name: "{{ bench_lxde_remove_packages }}"
+    state: absent
+    autoremove: true
