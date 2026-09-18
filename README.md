@@ -2,9 +2,33 @@
 
 Ansible playbook to provision test-bench PCs (Fedora + LXDE): users, desktop, Docker, Tailscale, udev, git checkouts, and more.
 
-Supported target: **Fedora** (with LXDE desktop).
+Supported target: **Fedora** (with LXDE desktop), see [7.1.5 Host setup guide](https://docs.google.com/document/d/1B2qIqUBqo7_LXgRBi_uQIBeSr00K8Y5IeKFlFXRfMqk/edit?tab=t.0) for starting installation.
 
 ---
+
+## Table of Contents
+
+- [What the playbook does](#what-the-playbook-does)
+- [Repository layout](#repository-layout)
+- [Prerequisites](#prerequisites)
+  - [Control machine Requisites](#control-machine-requisites)
+  - [Managed machine Requisites](#managed-machine-requisites)
+- [Inventory and secrets](#inventory-and-secrets)
+  - [Hosts](#hosts)
+  - [Per-host secrets](#per-host-secrets)
+  - [Deploy key for repo checkout](#deploy-key-for-repo-checkout)
+  - [Test connection to target host](#test-connection-to-target-host)
+- [How to run](#how-to-run)
+- [Main steps in detail](#main-steps-in-detail)
+  - [Users](#users)
+  - [LXDE desktop](#lxde-desktop)
+  - [Docker](#docker)
+  - [Tailscale](#tailscale)
+  - [Udev](#udev)
+  - [Git checkout (as collaudo)](#git-checkout-as-collaudo)
+  - [Keyring / service passwords](#keyring--service-passwords)
+- [Legacy bash script](#legacy-bash-script)
+- [Operational notes](#operational-notes)
 
 ## What the playbook does
 
@@ -45,7 +69,9 @@ scripts/                         # legacy bash scripts
 
 ---
 
-## Prerequisites (control machine)
+## Prerequisites
+
+### Control machine Requisites
 
 On the machine where you run `ansible-playbook`:
 
@@ -59,6 +85,23 @@ pip install passlib
 - `passlib` — password hashing for `develer` / `collaudo`
 
 ---
+
+### Managed machine Requisites
+The managed machine must have ssh enable and must be reachable by the control machine.
+
+Follow the [7.1.5 Host setup guide](https://docs.google.com/document/d/1B2qIqUBqo7_LXgRBi_uQIBeSr00K8Y5IeKFlFXRfMqk/edit?tab=t.0)  to make a fresh Fedora LXDE install.
+
+Create a base user collaudo, psw: collaudo
+
+Install openSSH and enable it:
+```
+sudo dnf install openssh-server openssl -y
+sudo systemctl enable --now sshd
+```
+
+Add the Control machine public key to enable ssh connection, by adding it to authorized keys or launching `ssh-copy-id collaudo@host` from the Control machine
+
+After this test that the connection via SSH from control machine to target host is automatic with no prompt to insert any password.
 
 ## Inventory and secrets
 
@@ -89,6 +132,8 @@ cp inventory/host_vars/client_credential.yml.example inventory/host_vars/solaris
 ansible-vault encrypt inventory/host_vars/solaris.yml
 ```
 
+TOFIX: quale password usiamo per la encrypt? se non nota a tutti il file yaml non si può usare
+
 Typical fields:
 
 | Variable | Purpose |
@@ -100,10 +145,47 @@ Typical fields:
 | `bench_git_repos` | List of repos to clone as `collaudo` |
 | `bench_keyring_passwords` | Secrets prepared for keyring / local helper files |
 | `bench_tailscale_auth_key` | Tailscale auth key (device join only; optional) |
+| `ansible_deploy_key_private` | Private Deploy key to make first repo checkout  |
+| `ansible_deploy_key_public` | Private Deploy key to make first repo checkout |
 
 Do not commit plaintext `inventory/host_vars/` files (see `.gitignore`).
 
 ---
+
+### Deploy key for repo checkout
+For the first checkout from a git repo ansible need a deploy key with write access.
+After the first checkout, the task will generate a read only deploy key and the other key must be deleted.
+
+For `checkout_repo` task to work correctly you must:
+- Generate an ssh key with no password using
+```
+ssh-keygen -t ed25519 -N ""
+```
+- Copy the public and private key generated in `ansible_deploy_key_private` / `ansible_deploy_key_private` variables of the host inventory yaml
+```
+    ansible_deploy_key_private: |
+      -----BEGIN OPENSSH PRIVATE KEY-----
+      ......................
+      -----END OPENSSH PRIVATE KEY-----
+    ansible_deploy_key_public: "ssh-ed25519 .... ansible@NO-MACHINE"
+```
+
+- Add the deploy key to the target Git repo with write access enabled
+
+- Optional: test the key
+```
+ssh -i /path/to/your/private_deploy_key git@github.com git-receive-pack 'organization/repo-name.git'
+```
+
+- After deploy is complete delete the write enable key from the git repos
+
+### Test connection to target host
+
+If all the prerequites are follow, you can ping the target machine using
+```
+ansible perseverance -m ping --ask-valut-pass
+```
+And insert the vault password used to encrypt the inventory host file
 
 ## How to run
 
@@ -128,7 +210,7 @@ ansible-playbook playbooks/new_installation.yml --ask-vault-pass --tags tailscal
 ```
 
 Available tags:  
-`hostname`, `users`, `local_profile`, `wallpaper`, `utils`, `lxde_cleanup`, `packages`, `keyring`, `docker`, `insync`, `tailscale`, `udev`, `checkout_repo`.
+`hostname`, `users`, `local_profile`, `wallpaper`, `utils`, `lxde_cleanup`, `lxde_allow_exec`, `packages`, `keyring`, `docker`, `insync`, `tailscale`, `udev`, `checkout_repo`.
 
 ---
 
