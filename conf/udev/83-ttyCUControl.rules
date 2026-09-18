@@ -5,7 +5,6 @@ SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="e661410403714524", GROUP="dialo
 SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="e661385283838a2d", GROUP="dialout", SYMLINK+="ttyCUCtrl", MODE="0666"
 SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="e661385283178d2b", GROUP="dialout", SYMLINK+="ttyCUCtrl", MODE="0666"
 
-
 # Warning!!
 # Only for cu test bench we use the same name port for the multiserial module to simplify the user uses
 SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="STR-0030", GROUP="dialout", SYMLINK+="ttyCUCtrl", MODE="0666"
@@ -15,10 +14,7 @@ SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="STR-0033", GROUP="dialout", SYM
 SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="STR-0034", GROUP="dialout", SYMLINK+="ttyCUCtrl", MODE="0666"
 SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="STR-0068", GROUP="dialout", SYMLINK+="ttyCUCtrl", MODE="0666"
 SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="STR-0065", GROUP="dialout", SYMLINK+="ttyCUCtrl", MODE="0666"
+SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="STR-0044", GROUP="dialout", SYMLINK+="ttyCUCtrl", MODE="0666"
 SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="STR-0045", GROUP="dialout", SYMLINK+="ttyCUCtrl", MODE="0666"
 SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="STR-0046", GROUP="dialout", SYMLINK+="ttyCUCtrl", MODE="0666"
 SUBSYSTEM=="tty", ACTION=="add", ATTRS{serial}=="STR-0077", GROUP="dialout", SYMLINK+="ttyCUCtrl", MODE="0666"
-
-
-
-
