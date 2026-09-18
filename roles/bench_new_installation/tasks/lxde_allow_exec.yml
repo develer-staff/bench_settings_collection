@@ -1,0 +1,30 @@
+---
+# Change pcmanfm-config folder settings to "Don't ask option on launch executable files" --> True
+- name: Forcefully log out the user to release config files
+  ansible.builtin.command: loginctl terminate-user {{ bench_collaudo_user }}
+  ignore_errors: true
+  become: true
+
+- name: Wait 3 seconds for the session to fully tear down
+  ansible.builtin.pause:
+    seconds: 3
+
+- name: Ensure libfm config directory exists
+  ansible.builtin.file:
+    path: "/home/{{ bench_collaudo_user }}/.config/libfm"
+    state: directory
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
+    mode: '0755'
+
+- name: Enable quick_exec (Don't ask on launch executable files)
+  community.general.ini_file:
+    path: "/home/{{ bench_collaudo_user }}/.config/libfm/libfm.conf"
+    section: config
+    option: quick_exec
+    value: "1"
+    no_extra_spaces: true
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
+    mode: '0644'
+    create: true

@@ -41,6 +41,13 @@
       tags: [lxde_cleanup, packages]
   tags: [lxde_cleanup, packages]
 
+- name: Allow applications quick exec
+  ansible.builtin.include_tasks:
+    file: lxde_allow_exec.yml
+    apply:
+      tags: [lxde_allow_exec, packages]
+  tags: [lxde_allow_exec, packages]
+
 - name: Install base packages
   ansible.builtin.include_tasks:
     file: packages.yml
