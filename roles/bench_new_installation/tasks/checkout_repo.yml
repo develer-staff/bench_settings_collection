@@ -121,9 +121,9 @@
 - name: Install private key for collaudo
   ansible.builtin.copy:
     content: "{{ bench_ansible_deploy_key_private }}"
-    dest: "/home/collaudo/.ssh/id_ed25519_ansible_deploy_key_private"
-    owner: collaudo
-    group: collaudo
+    dest: "/home/{{ bench_collaudo_user }}/.ssh/id_ed25519_ansible_deploy_key_private"
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
     mode: "0600"
   no_log: false
 
