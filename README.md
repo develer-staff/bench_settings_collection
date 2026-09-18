@@ -132,7 +132,7 @@ cp inventory/host_vars/client_credential.yml.example inventory/host_vars/solaris
 ansible-vault encrypt inventory/host_vars/solaris.yml
 ```
 
-TOFIX: quale password usiamo per la encrypt? se non nota a tutti il file yaml non si può usare
+**Note**: Always use **_Bench setting Collection Vault Ansible_** from 1password as Vault password 
 
 Typical fields:
 
@@ -183,7 +183,7 @@ ssh -i /path/to/your/private_deploy_key git@github.com git-receive-pack 'organiz
 
 If all the prerequites are follow, you can ping the target machine using
 ```
-ansible perseverance -m ping --ask-valut-pass
+ansible --ask-vault-pass perseverance -m ping
 ```
 And insert the vault password used to encrypt the inventory host file
 
