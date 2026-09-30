@@ -49,3 +49,4 @@
   when:
     - bench_tailscale_auth_key is defined
     - bench_tailscale_auth_key | length > 0
+  ignore_errors: true
