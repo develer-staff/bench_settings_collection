@@ -1,6 +1,14 @@
 ---
+- name: Install RPM Fusion free repository
+  ansible.builtin.command:
+    cmd: dnf install -y "{{ rpmfusion_repo_free_repo_url }}"
+
+- name: Install RPM Fusion nonfree repository
+  ansible.builtin.command:
+    cmd: dnf install -y "{{ rpmfusion_repo_nonfree_repo_url }}"
+    
 - name: Install base packages
   ansible.builtin.dnf:
     name: "{{ bench_base_packages }}"
-    state: present
+    state: latest
 

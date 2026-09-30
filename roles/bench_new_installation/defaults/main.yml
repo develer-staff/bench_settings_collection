@@ -6,6 +6,9 @@ bench_users:
 bench_develer_user: develer
 bench_collaudo_user: collaudo
 
+rpmfusion_repo_free_repo_url: "https://mirrors.rpmfusion.org/free/fedora/rpmfusion-free-release-{{ ansible_facts['distribution_major_version'] }}.noarch.rpm"
+rpmfusion_repo_nonfree_repo_url: "https://mirrors.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-{{ ansible_facts['distribution_major_version'] }}.noarch.rpm"
+
 # Repo root (playbooks/ lives one level under the repository root).
 bench_repo_root: "{{ playbook_dir | dirname }}"
 
@@ -29,6 +32,7 @@ bench_wallpaper_system_path: /usr/share/backgrounds/
 
 bench_base_packages:
   - openssl
+  - openssh-server
   - git
   - git-lfs
   - direnv
@@ -39,6 +43,8 @@ bench_base_packages:
   - libsecret
   - seahorse
   - gnome-keyring
+  - gnome-extensions-app
+  - gnome-shell-extension-dash-to-dock
 
 bench_docker_packages:
   - docker-ce
@@ -51,6 +57,7 @@ bench_docker_packages:
 # Override/extend in host_vars if a host still needs one of these.
 bench_lxde_remove_packages:
   # Office / editors
+  - libreoffice*
   - abiword
   - gnumeric
   - antiword
@@ -81,6 +88,7 @@ bench_lxde_remove_packages:
   - speech-dispatcher-espeak-ng
   - speech-dispatcher-libs
   - speech-dispatcher-utils
+  - qt6-qtspeech-speechd
   - espeak-ng
   - brltty
   - brlapi
