@@ -1,0 +1,122 @@
+---
+- name: Fedora System Upgrade via DNF System Plugin
+  hosts: all
+  become: true
+  vars:
+    # Target release version (e.g., 44, 43, or 'rawhide')
+    target_fedora_version: "44"
+    # Set to true if dependency issues occur with third-party repos
+    allow_erasing: false
+    # Previous release version if upgrading across 2 releases (e.g., "42")
+    previous_fedora_version: ""
+    # Set to true to run post-upgrade cleanup tasks
+    run_post_upgrade: true
+
+  tasks:
+    # =========================================================================
+    # PRE-UPGRADE CHECKS & PREPARATION
+    # =========================================================================
+    - name: Ensure target host is running Fedora
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['os_family'] == "RedHat"
+          - ansible_facts['distribution'] == "Fedora"
+        fail_msg: "This playbook is specifically intended for Fedora Linux."
+
+    - name: Ensure upgrade is needed
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['distribution_major_version'] < target_fedora_version
+        fail_msg: "Current Fedora version is already running version {{ target_fedora_version }}. No upgrade needed."
+
+    - name: Refresh repositories and upgrade existing packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+        update_cache: true
+
+    - name: Check if reboot is required after pre-upgrade packages
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: pre_reboot_stat
+
+    - name: Reboot system if pending updates require it
+      ansible.builtin.reboot:
+        msg: "Rebooting post update before downloading system-upgrade packages..."
+        connect_timeout: 5
+        reboot_timeout: 600
+        pre_reboot_delay: 2
+        post_reboot_delay: 10
+      when: pre_reboot_stat.stat.exists
+
+    # =========================================================================
+    # DOWNLOAD UPGRADE PACKAGES
+    # =========================================================================
+    - name: Download system-upgrade packages
+      ansible.builtin.command: >-
+        dnf system-upgrade download
+        --releasever={{ target_fedora_version }}
+        --assumeyes
+        {% if allow_erasing %}--allowerasing{% endif %}
+      register: dnf_download
+      changed_when: "'Download complete!' in dnf_download.stdout or dnf_download.rc == 0"
+
+    # =========================================================================
+    # TRIGGER OFFLINE REBOOT & WAIT FOR UPGRADE COMPLETION
+    # =========================================================================
+    - name: Check available reboot methods
+      ansible.builtin.command: dnf offline --help
+      register: dnf_offline_check
+      failed_when: false
+      changed_when: false
+
+    - name: Trigger system upgrade offline reboot
+      ansible.builtin.command: dnf offline reboot --assumeyes
+      async: 1
+      poll: 0
+      when: dnf_offline_check.rc == 0
+      failed_when: false
+
+    - name: Wait for host to complete offline upgrade and reconnect
+      ansible.builtin.wait_for_connection:
+        delay: 60
+        timeout: 3600
+        connect_timeout: 10
+
+    - name: Verify updated Fedora distribution version
+      ansible.builtin.setup:
+        filter: "ansible_distribution*"
+
+    - name: Confirm target version reached
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['distribution_major_version'] == target_fedora_version
+        fail_msg: "System rebooted but target version {{ target_fedora_version }} was not reached."
+        success_msg: "Successfully upgraded to Fedora {{ ansible_facts['distribution_major_version'] }}!"
+
+    # =========================================================================
+    # OPTIONAL POST-UPGRADE TASKS
+    # =========================================================================
+    - name: Execute Post-Upgrade Tasks
+      when: run_post_upgrade
+      block:
+        - name: Install remove-retired-packages tool
+          ansible.builtin.dnf:
+            name: remove-retired-packages
+            state: present
+
+        - name: Remove retired packages (standard upgrade)
+          ansible.builtin.command: remove-retired-packages --assumeyes
+          when: previous_fedora_version | length == 0
+          changed_when: true
+          failed_when: false
+
+        - name: Remove retired packages (upgrade across 2 releases)
+          ansible.builtin.command: "remove-retired-packages {{ previous_fedora_version }} --assumeyes"
+          when: previous_fedora_version | length > 0
+          changed_when: true
+          failed_when: false
+
+        - name: Autoremove orphaned / unneeded packages
+          ansible.builtin.dnf:
+            autoremove: true
