@@ -8,27 +8,83 @@ Supported target: **Fedora** (with LXDE desktop), see [7.1.5 Host setup guide](h
 
 ## Table of Contents
 
-- [What the playbook does](#what-the-playbook-does)
-- [Repository layout](#repository-layout)
-- [Prerequisites](#prerequisites)
-  - [Control machine Requisites](#control-machine-requisites)
-  - [Managed machine Requisites](#managed-machine-requisites)
-- [Inventory and secrets](#inventory-and-secrets)
-  - [Hosts](#hosts)
-  - [Per-host secrets](#per-host-secrets)
-  - [Deploy key for repo checkout](#deploy-key-for-repo-checkout)
-  - [Test connection to target host](#test-connection-to-target-host)
-- [How to run](#how-to-run)
-- [Main steps in detail](#main-steps-in-detail)
-  - [Users](#users)
-  - [LXDE desktop](#lxde-desktop)
-  - [Docker](#docker)
-  - [Tailscale](#tailscale)
-  - [Udev](#udev)
-  - [Git checkout (as collaudo)](#git-checkout-as-collaudo)
-  - [Keyring / service passwords](#keyring--service-passwords)
-- [Legacy bash script](#legacy-bash-script)
-- [Operational notes](#operational-notes)
+- [Fedora Custom Distro](#fedora-custom-distro)
+  - [Abstract](#abstract)
+  - [Apply patches](#apply-patches)
+  - [Customizations](#customizations)
+  - [To flash](#to-flash)
+  - [To build](#to-build)
+- [Ansible Playbooks](#ansible-playbooks)
+  - [What the playbook does](#what-the-playbook-does)
+  - [Repository layout](#repository-layout)
+  - [Prerequisites](#prerequisites)
+    - [Control machine Requisites](#control-machine-requisites)
+    - [Managed machine Requisites](#managed-machine-requisites)
+  - [Inventory and secrets](#inventory-and-secrets)
+    - [Hosts](#hosts)
+    - [Per-host secrets](#per-host-secrets)
+    - [Deploy key for repo checkout](#deploy-key-for-repo-checkout)
+    - [Test connection to target host](#test-connection-to-target-host)
+  - [How to run](#how-to-run)
+  - [Main steps in detail](#main-steps-in-detail)
+    - [Users](#users)
+    - [LXDE desktop](#lxde-desktop)
+    - [Docker](#docker)
+    - [Tailscale](#tailscale)
+    - [Udev](#udev)
+    - [Git checkout (as collaudo)](#git-checkout-as-collaudo)
+    - [Keyring / service passwords](#keyring--service-passwords)
+  - [Legacy bash script](#legacy-bash-script)
+  - [Operational notes](#operational-notes)
+
+# Fedora Custom Distro
+
+## Abstract
+
+A custom distribution of Fedora LXDE Spin is built for the `collaudo` PCs.
+
+It is based on Fedora Project's [official repository](https://forge.fedoraproject.org/releng/kiwi-descriptions) which is included as a repository's git submodule.
+It configures [Kiwi-Ng](https://osinside.github.io/kiwi/) image descriptions to build a custom Fedora 44 expandable disk image.
+
+## Apply Patches
+
+The patch can be found in `conf/0001-Fedora-LXDE-Spin-kiwi-description`.
+To apply them (inside `kiwi-descriptions` folder):
+
+```bash
+$ git apply ../conf/0001-Fedora-LXDE-Spin-kiwi-description.patch
+```
+
+## Customizations
+- `Fedora.kiwi`: added `openssh-server` and `openssl` packages necessary to run Ansible
+- `boot.xml`: changed `oem` image type to create ISO, reboot after installation and expand root partition automatically
+- `lxde.xml`: removed unnecessary packages
+- `users.xml`: created `collaudo` group and user
+- `config.sh`: enabled `sshd` service and prevented root user from being deleted
+
+## To build
+
+1. Create a docker Fedora image with the necessary tools.
+```bash
+$ sudo ./scripts/fedora-build/build_container.sh
+```
+
+2. Enter the container and build the OEM self-installing ISO
+```bash
+$ sudo ./scripts/fedora-build/enter_container
+(cont) ./scripts/fedora-build/build_iso.sh
+```
+
+3. The build process should take a few minutes (15 minutes on a ThinkPad Laptop). 
+The output image is saved in `./output-build` folder.
+
+## To flash
+Flash the `*.install.iso` file onto the USB device outside the container
+```bash
+$ ./scripts/fedora-build/flash_usb.sh [device] # (ex. /dev/sde)
+```
+
+# Ansible Playbooks
 
 ## What the playbook does
 

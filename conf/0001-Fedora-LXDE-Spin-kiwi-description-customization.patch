@@ -1,0 +1,150 @@
+From 4a035aa8b919744f5755465667227abd6cc6a465 Mon Sep 17 00:00:00 2001
+From: Gionatan Buono <gionatan9703@gmail.com>
+Date: Mon, 28 Sep 2026 13:21:11 +0200
+Subject: [PATCH] Fedora LXDE Spin kiwi-description customization
+
+---
+ Fedora.kiwi                             |  2 ++
+ components/boot.xml                     | 20 +++++++++++++++++---
+ components/desktops/lxde.xml            |  6 +++---
+ components/users.xml                    |  4 ++--
+ config.sh                               |  5 ++++-
+ root/home/collaudo/.ssh/authorized_keys |  1 +
+ 6 files changed, 29 insertions(+), 9 deletions(-)
+ create mode 100644 root/home/collaudo/.ssh/authorized_keys
+
+diff --git a/Fedora.kiwi b/Fedora.kiwi
+index 4e6c5a4..999ce72 100644
+--- a/Fedora.kiwi
++++ b/Fedora.kiwi
+@@ -64,6 +64,8 @@
+ 	<include from="this://./teams/jam.xml"/>
+ 	<include from="this://./teams/robotics.xml"/>
+ 	<packages type="bootstrap">
++		<package name="openssh-server"/>
++		<package name="openssl"/>
+ 		<package name="filesystem"/>
+ 	</packages>
+ </image>
+diff --git a/components/boot.xml b/components/boot.xml
+index a46e723..b9d2c4a 100644
+--- a/components/boot.xml
++++ b/components/boot.xml
+@@ -15,6 +15,7 @@
+ 		      kernelcmdline="rhgb quiet" devicepersistency="by-uuid"
+ 		      bootpartition="true" bootpartsize="2000" bootfilesystem="ext4" efipartsize="500" firmware="uefi"
+ 		      rootfs_label="fedora"
++		      installiso="true"
+ 		      >
+ 			<bootloader name="grub2" bls="true" console="console" timeout="5"/>
+ 			<systemdisk name="fedora">
+@@ -23,7 +24,10 @@
+ 				<volume name="var" parent="/"/>
+ 			</systemdisk>
+ 			<oemconfig>
+-				<oem-resize>false</oem-resize>
++			    <!-- Automatically reboot after installation finishes -->
++			    <oem-reboot>true</oem-reboot>
++			    <!-- Expand root partition on first boot of target system -->
++			    <oem-resize>true</oem-resize>
+ 			</oemconfig>
+ 		</type>
+ 	</preferences>
+@@ -86,24 +90,34 @@
+ 		<package name="grubby"/>
+ 	</packages>
+ 	<packages type="image" patternType="plusRecommended" profiles="BootCore,BootCoreLive">
++    <!-- 
+ 		<package name="grub2-efi-aa64" arch="aarch64"/>
+ 		<package name="grub2-efi-aa64-modules" arch="aarch64"/>
+ 		<package name="grub2-efi-riscv64" arch="riscv64"/>
+ 		<package name="grub2-efi-riscv64-modules" arch="riscv64"/>
+ 		<package name="grub2-efi-ia32" arch="x86_64"/>
+ 		<package name="grub2-efi-ia32-modules" arch="x86_64"/>
++    -->
+ 		<package name="grub2-efi-x64" arch="x86_64"/>
+ 		<package name="grub2-efi-x64-modules" arch="x86_64"/>
+ 		<package name="grub2-pc" arch="x86_64"/>
+ 		<package name="grub2-pc-modules" arch="x86_64"/>
++    <!--
+ 		<package name="grub2-ppc64le" arch="ppc64le"/>
+ 		<package name="s390utils-base" arch="s390x"/>
+ 		<package name="shim-signed-aa64" arch="aarch64"/>
+-		<package name="shim-signed-ia32" arch="x86_64"/>
+-		<package name="shim-signed-x64" arch="x86_64"/>
++    <package name="shim-signed-ia32" arch="x86_64"/>
+ 		<package name="shim-unsigned-riscv64" arch="riscv64"/>
++    -->
++		<package name="shim-signed-x64" arch="x86_64"/>
+ 		<package name="systemd-oomd-defaults"/>
+ 		<package name="systemd-resolved"/>
++
++    <!-- Required packages for OEM installiso -->
++    <package name="dracut-kiwi-oem-repart" arch="x86_64"/>
++    <package name="dracut-kiwi-oem-dump" arch="x86_64"/>
++    <package name="dracut-network" arch="x86_64"/>
++    <package name="iproute" arch="x86_64"/>
+ 	</packages>
+ 	<packages type="image" patternType="plusRecommended" profiles="BootCore">
+ 		<ignore name="kernel-*debug*"/>
+diff --git a/components/desktops/lxde.xml b/components/desktops/lxde.xml
+index b14e097..02a6646 100644
+--- a/components/desktops/lxde.xml
++++ b/components/desktops/lxde.xml
+@@ -7,9 +7,9 @@
+ 	<packages type="image" patternType="plusRecommended" profiles="LXDE-Desktop">
+ 		<!-- install env-group to resolve RhBug:1891500 -->
+ 		<namedCollection name="lxde-desktop-environment"/>
+-		<namedCollection name="lxde-apps"/>
+-		<namedCollection name="lxde-media"/>
+-		<namedCollection name="lxde-office"/>
++		<!-- <namedCollection name="lxde-apps"/> -->
++		<!-- <namedCollection name="lxde-media"/> -->
++		<!-- <namedCollection name="lxde-office"/> -->
+ 		<package name="lxpolkit"/> <!-- Ensure LXDE polkit agent is used -->
+ 		<package name="notification-daemon"/> <!-- Ensure correct notification daemon is used -->
+ 		<ignore name="PackageKit*"/> <!-- we use dnfdragora instead -->
+diff --git a/components/users.xml b/components/users.xml
+index ab9dcb7..fabc0f9 100644
+--- a/components/users.xml
++++ b/components/users.xml
+@@ -1,6 +1,6 @@
+ <image>
+ 	<users profiles="BootCore">
+-		<!-- The password here does not matter, it will be erased in config.sh -->
+-		<user name="root" groups="root" password="linux" home="/root" pwdformat="plain" />
++		<user name="root" groups="root" password="root" home="/root" pwdformat="plain" />
++		<user name="collaudo" groups="wheel,collaudo" password="collaudo" pwdformat="plain" />
+ 	</users>
+ </image>
+diff --git a/config.sh b/config.sh
+index abe98b1..00808f0 100755
+--- a/config.sh
++++ b/config.sh
+@@ -65,7 +65,7 @@ fi
+ #======================================
+ # Delete & lock the root user password
+ #--------------------------------------
+-if [[ "$kiwi_profiles" == *"Cloud"* ]] || [[ "$kiwi_profiles" == *"Disk"* ]] || [[ "$kiwi_profiles" == *"Live"* ]] || [[ "$kiwi_profiles" == *"WSL"* ]]; then
++if [[ "$kiwi_profiles" == *"Cloud"* ]] || [[ "$kiwi_profiles" == *"Live"* ]] || [[ "$kiwi_profiles" == *"WSL"* ]]; then
+ 	passwd -d root
+ 	passwd -l root
+ fi
+@@ -552,4 +552,7 @@ if [[ "$kiwi_profiles" == *"FEX"* ]]; then
+ 	rm /usr/bin/rm
+ fi
+ 
++# Enable sshd daemon needed for ansible
++systemctl enable sshd
++
+ exit 0
+diff --git a/root/home/collaudo/.ssh/authorized_keys b/root/home/collaudo/.ssh/authorized_keys
+new file mode 100644
+index 0000000..af2e3ae
+--- /dev/null
++++ b/root/home/collaudo/.ssh/authorized_keys
+@@ -0,0 +1 @@
++ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAdtoNJqoBEWnBjQ0vnNEMDpVurpgCW/iFUeeys/UywS user@user-ThinkPad-T490
+-- 
+2.43.0
+
