@@ -147,7 +147,7 @@ The managed machine must have ssh enable and must be reachable by the control ma
 
 Follow the [7.1.5 Host setup guide](https://docs.google.com/document/d/1B2qIqUBqo7_LXgRBi_uQIBeSr00K8Y5IeKFlFXRfMqk/edit?tab=t.0)  to make a fresh Fedora LXDE install.
 
-Create a base user collaudo, psw: collaudo
+Create a base user `develer`, psw: `develer`
 
 Install openSSH and enable it:
 ```
