@@ -1,0 +1,180 @@
+From 40a901f6b6481d37345af2f2d369980fddc7d9a5 Mon Sep 17 00:00:00 2001
+From: Gionatan Buono <gionatan9703@gmail.com>
+Date: Fri, 2 Oct 2026 10:32:09 +0200
+Subject: [PATCH] Fedora LXDE Spin kiwi-description customization
+
+---
+ Fedora.kiwi                             |  2 +-
+ components/boot.xml                     | 20 +++++++++++++++++---
+ components/common.xml                   |  2 ++
+ components/desktops/lxde.xml            |  6 +++---
+ components/users.xml                    |  5 +++--
+ config.sh                               | 11 ++++++++++-
+ root/home/collaudo/.ssh/authorized_keys |  1 +
+ root/home/develer/.ssh/authorized_keys  |  1 +
+ 8 files changed, 38 insertions(+), 10 deletions(-)
+ create mode 100644 root/home/collaudo/.ssh/authorized_keys
+ create mode 100644 root/home/develer/.ssh/authorized_keys
+
+diff --git a/Fedora.kiwi b/Fedora.kiwi
+index 4e6c5a4..4146715 100644
+--- a/Fedora.kiwi
++++ b/Fedora.kiwi
+@@ -11,7 +11,7 @@
+ 		<packagemanager>dnf5</packagemanager>
+ 		<locale>en_US</locale>
+ 		<keytable>us</keytable>
+-		<timezone>UTC</timezone>
++		<timezone>Europe/Rome</timezone>
+ 		<release-version>44</release-version>
+ 	</preferences>
+ 	<include from="this://./repositories/core.xml"/>
+diff --git a/components/boot.xml b/components/boot.xml
+index a46e723..b9d2c4a 100644
+--- a/components/boot.xml
++++ b/components/boot.xml
+@@ -15,6 +15,7 @@
+ 		      kernelcmdline="rhgb quiet" devicepersistency="by-uuid"
+ 		      bootpartition="true" bootpartsize="2000" bootfilesystem="ext4" efipartsize="500" firmware="uefi"
+ 		      rootfs_label="fedora"
++		      installiso="true"
+ 		      >
+ 			<bootloader name="grub2" bls="true" console="console" timeout="5"/>
+ 			<systemdisk name="fedora">
+@@ -23,7 +24,10 @@
+ 				<volume name="var" parent="/"/>
+ 			</systemdisk>
+ 			<oemconfig>
+-				<oem-resize>false</oem-resize>
++			    <!-- Automatically reboot after installation finishes -->
++			    <oem-reboot>true</oem-reboot>
++			    <!-- Expand root partition on first boot of target system -->
++			    <oem-resize>true</oem-resize>
+ 			</oemconfig>
+ 		</type>
+ 	</preferences>
+@@ -86,24 +90,34 @@
+ 		<package name="grubby"/>
+ 	</packages>
+ 	<packages type="image" patternType="plusRecommended" profiles="BootCore,BootCoreLive">
++    <!-- 
+ 		<package name="grub2-efi-aa64" arch="aarch64"/>
+ 		<package name="grub2-efi-aa64-modules" arch="aarch64"/>
+ 		<package name="grub2-efi-riscv64" arch="riscv64"/>
+ 		<package name="grub2-efi-riscv64-modules" arch="riscv64"/>
+ 		<package name="grub2-efi-ia32" arch="x86_64"/>
+ 		<package name="grub2-efi-ia32-modules" arch="x86_64"/>
++    -->
+ 		<package name="grub2-efi-x64" arch="x86_64"/>
+ 		<package name="grub2-efi-x64-modules" arch="x86_64"/>
+ 		<package name="grub2-pc" arch="x86_64"/>
+ 		<package name="grub2-pc-modules" arch="x86_64"/>
++    <!--
+ 		<package name="grub2-ppc64le" arch="ppc64le"/>
+ 		<package name="s390utils-base" arch="s390x"/>
+ 		<package name="shim-signed-aa64" arch="aarch64"/>
+-		<package name="shim-signed-ia32" arch="x86_64"/>
+-		<package name="shim-signed-x64" arch="x86_64"/>
++    <package name="shim-signed-ia32" arch="x86_64"/>
+ 		<package name="shim-unsigned-riscv64" arch="riscv64"/>
++    -->
++		<package name="shim-signed-x64" arch="x86_64"/>
+ 		<package name="systemd-oomd-defaults"/>
+ 		<package name="systemd-resolved"/>
++
++    <!-- Required packages for OEM installiso -->
++    <package name="dracut-kiwi-oem-repart" arch="x86_64"/>
++    <package name="dracut-kiwi-oem-dump" arch="x86_64"/>
++    <package name="dracut-network" arch="x86_64"/>
++    <package name="iproute" arch="x86_64"/>
+ 	</packages>
+ 	<packages type="image" patternType="plusRecommended" profiles="BootCore">
+ 		<ignore name="kernel-*debug*"/>
+diff --git a/components/common.xml b/components/common.xml
+index dc1f34c..95aa175 100644
+--- a/components/common.xml
++++ b/components/common.xml
+@@ -5,6 +5,8 @@
+ 	</profiles>
+ 	<packages type="image" patternType="plusRecommended" profiles="BaseCommon">
+ 		<namedCollection name="standard"/>
++    <package name="openssh-server"/>
++		<package name="openssl"/>
+ 		<ignore name="qemu-user-static"/> <!-- Saves ~100MB -->
+ 	</packages>
+ 	<packages type="image" patternType="plusRecommended" profiles="HardwareCommon">
+diff --git a/components/desktops/lxde.xml b/components/desktops/lxde.xml
+index b14e097..02a6646 100644
+--- a/components/desktops/lxde.xml
++++ b/components/desktops/lxde.xml
+@@ -7,9 +7,9 @@
+ 	<packages type="image" patternType="plusRecommended" profiles="LXDE-Desktop">
+ 		<!-- install env-group to resolve RhBug:1891500 -->
+ 		<namedCollection name="lxde-desktop-environment"/>
+-		<namedCollection name="lxde-apps"/>
+-		<namedCollection name="lxde-media"/>
+-		<namedCollection name="lxde-office"/>
++		<!-- <namedCollection name="lxde-apps"/> -->
++		<!-- <namedCollection name="lxde-media"/> -->
++		<!-- <namedCollection name="lxde-office"/> -->
+ 		<package name="lxpolkit"/> <!-- Ensure LXDE polkit agent is used -->
+ 		<package name="notification-daemon"/> <!-- Ensure correct notification daemon is used -->
+ 		<ignore name="PackageKit*"/> <!-- we use dnfdragora instead -->
+diff --git a/components/users.xml b/components/users.xml
+index ab9dcb7..612dd01 100644
+--- a/components/users.xml
++++ b/components/users.xml
+@@ -1,6 +1,7 @@
+ <image>
+ 	<users profiles="BootCore">
+-		<!-- The password here does not matter, it will be erased in config.sh -->
+-		<user name="root" groups="root" password="linux" home="/root" pwdformat="plain" />
++		<user name="root" groups="root" password="root" home="/root" pwdformat="plain" />
++		<user name="develer" groups="wheel,develer" home="/home/develer" password="develer" pwdformat="plain" />
++		<user name="collaudo" groups="collaudo" home="/home/collaudo" password="collaudo" pwdformat="plain" />
+ 	</users>
+ </image>
+diff --git a/config.sh b/config.sh
+index abe98b1..a325dc8 100755
+--- a/config.sh
++++ b/config.sh
+@@ -65,7 +65,7 @@ fi
+ #======================================
+ # Delete & lock the root user password
+ #--------------------------------------
+-if [[ "$kiwi_profiles" == *"Cloud"* ]] || [[ "$kiwi_profiles" == *"Disk"* ]] || [[ "$kiwi_profiles" == *"Live"* ]] || [[ "$kiwi_profiles" == *"WSL"* ]]; then
++if [[ "$kiwi_profiles" == *"Cloud"* ]] || [[ "$kiwi_profiles" == *"Live"* ]] || [[ "$kiwi_profiles" == *"WSL"* ]]; then
+ 	passwd -d root
+ 	passwd -l root
+ fi
+@@ -552,4 +552,13 @@ if [[ "$kiwi_profiles" == *"FEX"* ]]; then
+ 	rm /usr/bin/rm
+ fi
+ 
++# Enable sshd daemon needed for ansible
++systemctl enable sshd
++
++# Set home folder correct permissions
++chmod 700 /home/develer/.ssh
++chmod 600 /home/develer/.ssh/authorized_keys
++chmod 700 /home/collaudo/.ssh
++chmod 600 /home/collaudo/.ssh/authorized_keys
++
+ exit 0
+diff --git a/root/home/collaudo/.ssh/authorized_keys b/root/home/collaudo/.ssh/authorized_keys
+new file mode 100644
+index 0000000..af2e3ae
+--- /dev/null
++++ b/root/home/collaudo/.ssh/authorized_keys
+@@ -0,0 +1 @@
++ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAdtoNJqoBEWnBjQ0vnNEMDpVurpgCW/iFUeeys/UywS user@user-ThinkPad-T490
+diff --git a/root/home/develer/.ssh/authorized_keys b/root/home/develer/.ssh/authorized_keys
+new file mode 100644
+index 0000000..af2e3ae
+--- /dev/null
++++ b/root/home/develer/.ssh/authorized_keys
+@@ -0,0 +1 @@
++ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAdtoNJqoBEWnBjQ0vnNEMDpVurpgCW/iFUeeys/UywS user@user-ThinkPad-T490
+-- 
+2.43.0
+

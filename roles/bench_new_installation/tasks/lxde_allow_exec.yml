@@ -2,6 +2,7 @@
 # Change pcmanfm-config folder settings to "Don't ask option on launch executable files" --> True
 - name: Forcefully log out the user to release config files
   ansible.builtin.command: loginctl terminate-user {{ bench_collaudo_user }}
+  ignore_unreachable: true
   ignore_errors: true
   become: true
 
