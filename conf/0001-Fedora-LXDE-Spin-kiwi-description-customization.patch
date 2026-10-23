@@ -1,20 +1,16 @@
-From 40a901f6b6481d37345af2f2d369980fddc7d9a5 Mon Sep 17 00:00:00 2001
+From ebddf69a352a56c3d3265236f33c3a95d81e1354 Mon Sep 17 00:00:00 2001
 From: Gionatan Buono <gionatan9703@gmail.com>
 Date: Fri, 2 Oct 2026 10:32:09 +0200
 Subject: [PATCH] Fedora LXDE Spin kiwi-description customization
 
 ---
- Fedora.kiwi                             |  2 +-
- components/boot.xml                     | 20 +++++++++++++++++---
- components/common.xml                   |  2 ++
- components/desktops/lxde.xml            |  6 +++---
- components/users.xml                    |  5 +++--
- config.sh                               | 11 ++++++++++-
- root/home/collaudo/.ssh/authorized_keys |  1 +
- root/home/develer/.ssh/authorized_keys  |  1 +
- 8 files changed, 38 insertions(+), 10 deletions(-)
- create mode 100644 root/home/collaudo/.ssh/authorized_keys
- create mode 100644 root/home/develer/.ssh/authorized_keys
+ Fedora.kiwi                  |  2 +-
+ components/boot.xml          | 20 +++++++++++++++++---
+ components/common.xml        |  2 ++
+ components/desktops/lxde.xml |  6 +++---
+ components/users.xml         |  5 +++--
+ config.sh                    |  5 ++++-
+ 6 files changed, 30 insertions(+), 10 deletions(-)
 
 diff --git a/Fedora.kiwi b/Fedora.kiwi
 index 4e6c5a4..4146715 100644
@@ -135,7 +131,7 @@ index ab9dcb7..612dd01 100644
  	</users>
  </image>
 diff --git a/config.sh b/config.sh
-index abe98b1..a325dc8 100755
+index abe98b1..00808f0 100755
 --- a/config.sh
 +++ b/config.sh
 @@ -65,7 +65,7 @@ fi
@@ -147,34 +143,14 @@ index abe98b1..a325dc8 100755
  	passwd -d root
  	passwd -l root
  fi
-@@ -552,4 +552,13 @@ if [[ "$kiwi_profiles" == *"FEX"* ]]; then
+@@ -552,4 +552,7 @@ if [[ "$kiwi_profiles" == *"FEX"* ]]; then
  	rm /usr/bin/rm
  fi
  
 +# Enable sshd daemon needed for ansible
 +systemctl enable sshd
 +
-+# Set home folder correct permissions
-+chmod 700 /home/develer/.ssh
-+chmod 600 /home/develer/.ssh/authorized_keys
-+chmod 700 /home/collaudo/.ssh
-+chmod 600 /home/collaudo/.ssh/authorized_keys
-+
  exit 0
-diff --git a/root/home/collaudo/.ssh/authorized_keys b/root/home/collaudo/.ssh/authorized_keys
-new file mode 100644
-index 0000000..af2e3ae
---- /dev/null
-+++ b/root/home/collaudo/.ssh/authorized_keys
-@@ -0,0 +1 @@
-+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAdtoNJqoBEWnBjQ0vnNEMDpVurpgCW/iFUeeys/UywS user@user-ThinkPad-T490
-diff --git a/root/home/develer/.ssh/authorized_keys b/root/home/develer/.ssh/authorized_keys
-new file mode 100644
-index 0000000..af2e3ae
---- /dev/null
-+++ b/root/home/develer/.ssh/authorized_keys
-@@ -0,0 +1 @@
-+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAdtoNJqoBEWnBjQ0vnNEMDpVurpgCW/iFUeeys/UywS user@user-ThinkPad-T490
 -- 
 2.43.0
 
