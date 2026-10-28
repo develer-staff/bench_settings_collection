@@ -1,0 +1,44 @@
+---
+- name: Download and flash USB drive with ISO
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  become_exe: sudo.ws
+
+  vars_prompt:
+    - name: device
+      prompt: "What is the device you want to flash?"
+      private: false
+  vars:
+    target_fedora_version: "44" # Note that the patch should be based on this Fedora version to be applied
+
+    # Project paths
+    project_dir: "{{ playbook_dir }}/.."
+    kiwi_submodule_path: "{{ project_dir }}/kiwi-descriptions"
+    patch_file_path: "{{ project_dir }}/conf/0001-Fedora-44-LXDE-Spin-kiwi-description.patch"
+    
+    # Output file settings
+    iso_build_dir: "{{ project_dir }}/output-build"
+    iso_file_name: "Fedora.x86_64-{{ target_fedora_version }}.install.iso"
+
+  tasks:
+    # 1. Ensure ISO file exists
+    - name: Ensure ISO file exists locally
+      ansible.builtin.stat:
+        path: "{{ iso_build_dir }}/{{ iso_file_name }}"
+      register: file_stat
+      failed_when: not file_stat.stat.exists
+
+    # 2. Flash USB
+    - name: Flash USB
+      ansible.builtin.shell: "{{ project_dir }}/scripts/fedora-build/flash_usb.sh {{ device }}"
+      register: usb_script_output
+      failed_when: > 
+        ('Missing' in usb_script_output.stdout) or
+        ('ERROR' in usb_script_output.stdout)
+
+    - name: Unmount USB
+      ansible.posix.mount:
+        path: "{{ device }}"
+        state: unmounted
+
