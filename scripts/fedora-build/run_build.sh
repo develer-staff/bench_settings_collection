@@ -12,4 +12,5 @@ cd "$(dirname "$0")"
 podman run -it --privileged \
   -v /dev:/dev \
   -v "../../":/build \
-  fedora-collaudo-mkiso
+  fedora-collaudo-mkiso \
+  /build/scripts/fedora-build/build_iso.sh

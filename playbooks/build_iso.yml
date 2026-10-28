@@ -1,0 +1,67 @@
+---
+- name: Pull, patch, build, and publish Custom Fedora ISO image
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  become: false
+
+  vars:
+    # Project paths
+    project_dir: "{{ playbook_dir }}/.."
+    kiwi_submodule_path: "{{ project_dir }}/kiwi-descriptions"
+    patch_file_path: "{{ project_dir }}/conf/0001-Fedora-LXDE-Spin-kiwi-description-customization.patch"
+    
+    # Output file settings
+    iso_build_dir: "{{ project_dir }}/output-build"
+    iso_file_name: "Fedora.x86_64-44.install.iso"
+
+  pre_tasks:
+    - name: Ensure kiwi_submodule_path exists
+      ansible.builtin.file:
+        path: "{{ kiwi_submodule_path }}"
+        state: directory
+
+  tasks:
+    # 1. Pull kiwi-descriptions repository (git submodule)
+    - name: Ensure git submodules are updated and initialized
+      ansible.builtin.command:
+        cmd: git submodule update --init --recursive
+      args:
+        chdir: "{{ kiwi_submodule_path }}"
+      register: git_submodule_result
+      changed_when: git_submodule_result.stderr != ""
+
+    # 2. Checkout to f44 branch
+    - name: Checkout to Fedora 44 branch
+      ansible.builtin.command:
+        cmd: git checkout f44
+      args:
+        chdir: "{{ kiwi_submodule_path }}"
+      register: git_submodule_result
+      changed_when: "'Already' not in git_submodule_result.stderr"
+
+    # 3. Apply customizations patch
+    - name: Apply patch using git apply inside kiwi-descriptions
+      ansible.builtin.command: 
+        cmd: "git apply {{ patch_file_path }}" 
+      args: 
+        chdir: "{{ kiwi_submodule_path }}" 
+      register: git_apply_result 
+      # Prevents failure if the patch is already applied 
+      failed_when: 
+        - git_apply_result.rc != 0 
+        - "'patch does not apply' not in git_apply_result.stderr" 
+      changed_when: git_apply_result.rc == 0
+
+    # 4. Execute build_all script and build ISO
+    - name: Create image and execute build_iso with sudo
+      become: true
+      ansible.builtin.shell: "{{ project_dir }}/scripts/build_all.sh"      
+      args:
+        chdir: "{{ project_dir }}"
+        creates: "{{ iso_build_dir }}/{{ iso_file_name }}"
+
+    # 5. Add current date to output file name
+    - name: Rename output ISO with current date prefix
+      ansible.builtin.command: mv "{{ iso_build_dir }}/{{ iso_file_name }}" "{{ iso_build_dir }}/{{ ansible_date_time.date }}_{{ iso_file_name }}"
+
