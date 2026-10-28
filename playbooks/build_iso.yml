@@ -6,14 +6,16 @@
   become: false
 
   vars:
+    target_fedora_version: "44" # Note that the patch should be based on this Fedora version to be applied
+
     # Project paths
     project_dir: "{{ playbook_dir }}/.."
     kiwi_submodule_path: "{{ project_dir }}/kiwi-descriptions"
-    patch_file_path: "{{ project_dir }}/conf/0001-Fedora-LXDE-Spin-kiwi-description-customization.patch"
+    patch_file_path: "{{ project_dir }}/conf/0001-Fedora-44-LXDE-Spin-kiwi-description.patch"
     
     # Output file settings
     iso_build_dir: "{{ project_dir }}/output-build"
-    iso_file_name: "Fedora.x86_64-44.install.iso"
+    iso_file_name: "Fedora.x86_64-{{ target_fedora_version }}.install.iso"
 
   pre_tasks:
     - name: Ensure kiwi_submodule_path exists
@@ -31,10 +33,10 @@
       register: git_submodule_result
       changed_when: git_submodule_result.stderr != ""
 
-    # 2. Checkout to f44 branch
-    - name: Checkout to Fedora 44 branch
+    # 2. Checkout to fedora target version branch
+    - name: Checkout to Fedora target version branch
       ansible.builtin.command:
-        cmd: git checkout f44
+        cmd: "git checkout f{{ target_fedora_version }}"
       args:
         chdir: "{{ kiwi_submodule_path }}"
       register: git_submodule_result
@@ -47,7 +49,6 @@
       args: 
         chdir: "{{ kiwi_submodule_path }}" 
       register: git_apply_result 
-      # Prevents failure if the patch is already applied 
       failed_when: 
         - git_apply_result.rc != 0 
         - "'patch does not apply' not in git_apply_result.stderr" 

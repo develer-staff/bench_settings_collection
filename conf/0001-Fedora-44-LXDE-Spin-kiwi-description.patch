@@ -53,7 +53,7 @@ index a46e723..b9d2c4a 100644
  		<package name="grubby"/>
  	</packages>
  	<packages type="image" patternType="plusRecommended" profiles="BootCore,BootCoreLive">
-+    <!-- 
++    <!--
  		<package name="grub2-efi-aa64" arch="aarch64"/>
  		<package name="grub2-efi-aa64-modules" arch="aarch64"/>
  		<package name="grub2-efi-riscv64" arch="riscv64"/>
