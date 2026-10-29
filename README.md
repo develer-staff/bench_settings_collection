@@ -81,8 +81,10 @@ The output image is saved in `./output-build` folder.
 ## To flash
 Flash the `*.install.iso` file onto the USB device outside the container
 ```bash
-$ ./scripts/fedora-build/flash_usb.sh [device] # (ex. /dev/sde)
+$ ./scripts/fedora-build/flash_usb.sh <device> [optional-iso-path] # (ex. /dev/sde)
 ```
+
+The ansible playbook `./playbooks/flash_iso.yml` is also provided to perform the same steps.
 
 # Ansible Playbooks
 
