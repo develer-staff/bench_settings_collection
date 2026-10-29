@@ -98,7 +98,9 @@ Flash the `*.install.iso` file onto the USB device
 $ ./scripts/flash.sh [device] # (ex. /dev/sde)
 ```
 
-# new_installation.yml playbook
+The ansible playbook `./playbooks/flash_iso.yml` is also provided to perform the same steps.
+
+# Ansible Playbooks
 
 ## What the playbook does
 
