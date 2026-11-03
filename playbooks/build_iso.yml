@@ -16,6 +16,10 @@
     # Output file settings
     iso_build_dir: "{{ project_dir }}/output-build"
     iso_file_name: "Fedora.x86_64-{{ target_fedora_version }}.install.iso"
+    release_iso_file_path: "{{ iso_build_dir }}/{{ ansible_date_time.date }}_{{ iso_file_name }}"
+
+    rclone_remote: "test2"
+    rclone_dest_path: "{{ rclone_remote }}:Release/"
 
   pre_tasks:
     - name: Ensure kiwi_submodule_path exists
@@ -65,5 +69,20 @@
 
     # 5. Add current date to output file name
     - name: Rename output ISO with current date prefix
-      ansible.builtin.command: mv "{{ iso_build_dir }}/{{ iso_file_name }}" "{{ iso_build_dir }}/{{ ansible_date_time.date }}_{{ iso_file_name }}"
+      ansible.builtin.command:
+        cmd: mv "{{ iso_build_dir }}/{{ iso_file_name }}" "{{ release_iso_file_path }}"
+        removes: "{{ iso_build_dir }}/{{ iso_file_name }}"
+        creates: "{{ release_iso_file_path }}"
+
+    # [To-do] 6. Create task that from variable creates rclone.conf file
+
+    # 7. Setup rclone.conf
+    - name: Test rclone
+      ansible.builtin.command: "rclone -v lsf {{ rclone_remote }}:"
+      register: test_rclone_res
+      failed_when: "'ERROR' in test_rclone_res.stderr"
+    
+    # 8. Upload file
+    - name: Upload file
+      ansible.builtin.command: "rclone copy {{ release_iso_file_path }} {{ rclone_dest_path }}"
 
