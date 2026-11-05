@@ -16,10 +16,12 @@
     # Output file settings
     iso_build_dir: "{{ project_dir }}/output-build"
     iso_file_name: "Fedora.x86_64-{{ target_fedora_version }}.install.iso"
-    release_iso_file_path: "{{ iso_build_dir }}/{{ ansible_date_time.date }}_{{ iso_file_name }}"
+    iso_file_path: "{{ iso_build_dir }}/{{ iso_file_name }}"
 
-    rclone_remote: "test2"
-    rclone_dest_path: "{{ rclone_remote }}:Release/"
+    release_iso_file_name: "{{ ansible_date_time.date }}_{{ iso_file_name }}"
+
+    rclone_remote: "collaudo-iso"
+    rclone_dest_path: "{{ rclone_remote }}:releases"
 
   pre_tasks:
     - name: Ensure kiwi_submodule_path exists
@@ -67,22 +69,19 @@
         chdir: "{{ project_dir }}"
         creates: "{{ iso_build_dir }}/{{ iso_file_name }}"
 
-    # 5. Add current date to output file name
-    - name: Rename output ISO with current date prefix
-      ansible.builtin.command:
-        cmd: mv "{{ iso_build_dir }}/{{ iso_file_name }}" "{{ release_iso_file_path }}"
-        removes: "{{ iso_build_dir }}/{{ iso_file_name }}"
-        creates: "{{ release_iso_file_path }}"
+    # [To-do] 5. Create task that from variable creates rclone.conf file
 
-    # [To-do] 6. Create task that from variable creates rclone.conf file
-
-    # 7. Setup rclone.conf
+    # 6. Setup rclone.conf
     - name: Test rclone
       ansible.builtin.command: "rclone -v lsf {{ rclone_remote }}:"
       register: test_rclone_res
       failed_when: "'ERROR' in test_rclone_res.stderr"
+
+    # 7. Move current release to old folder
+    - name: Move current release to old releases folder
+      ansible.builtin.command: "rclone move collaudo-iso:releases/latest collaudo-iso:releases/old --include='*'"
     
     # 8. Upload file
     - name: Upload file
-      ansible.builtin.command: "rclone copy {{ release_iso_file_path }} {{ rclone_dest_path }}"
+      ansible.builtin.command: "rclone copyto {{ iso_file_path }} {{ rclone_dest_path }}/latest/{{ release_iso_file_name }}"
 
