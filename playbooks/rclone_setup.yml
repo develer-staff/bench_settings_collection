@@ -1,0 +1,41 @@
+---
+- name: Setups rclone on local machine
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  become_exe: sudo.ws
+
+  vars:
+    project_dir: "{{ playbook_dir }}/.."
+  vars_files:
+    - "{{ project_dir }}/inventory/rclone.yml"
+
+  tasks:
+    - name: Install rclone package
+      ansible.builtin.package:
+        name: rclone
+        state: present
+      
+    - name: Create rclone config directory
+      ansible.builtin.file:
+        path: "{{ rclone_conf_dir }}"
+        state: directory
+        mode: "0755"
+      
+    - name: Deploy rclone config
+      ansible.builtin.copy:
+        dest: "{{ rclone_conf_path }}"
+        mode: "0644"
+        content: "{{ rclone_conf_content }}"
+      
+    - name: Deploy service json config
+      ansible.builtin.copy:
+        dest: "{{ rclone_conf_service_path }}"
+        mode: "0644"
+        content: "{{ rclone_conf_service_content }}"
+      
+    - name: Validate rclone version
+      ansible.builtin.command: rclone version
+      register: rclone_version
+      changed_when: false
+
