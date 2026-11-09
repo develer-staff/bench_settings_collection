@@ -1,5 +1,5 @@
 #!/bin/sh
-# Enter fedora container to build the image
+# Enters the fedora container to build the image
 # Must be run as root because kiwi-ng requires access to /dev
 
 if ! [ $(id -u) = 0 ]; then

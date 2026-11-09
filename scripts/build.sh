@@ -1,5 +1,5 @@
 #!/bin/sh
-# Create a Fedora distro in output-build
+# Creates a Fedora distro in ./output-build
 # ~15 minutes
 
 cd "$(dirname "$0")"

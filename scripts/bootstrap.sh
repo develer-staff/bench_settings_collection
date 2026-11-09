@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # Bootstrap script
 # This script should be run only once
 
@@ -11,7 +10,8 @@ if ! command -v ansible >/dev/null 2>&1; then
     exit 1
 fi 
 
-# Create a podman Fedora container to build the custom ISo as described in the Dockerfile
+# Create a podman Fedora image to build the custom ISO as described in the Dockerfile
+# Requires sudo because the image needs sudo permissions to build the ISO
 sudo podman build -t fedora-collaudo-mkiso .
 
 # Setup rclone
