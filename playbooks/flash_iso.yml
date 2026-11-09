@@ -19,21 +19,30 @@
     # Output file settings
     iso_build_dir: "{{ project_dir }}/output-build"
     output_iso_name: "Fedora.x86_64-{{ target_fedora_version }}.install.iso"
-    output_iso_path: "{{ iso_build_dir }}/{{ output_iso_name }}"
+    output_iso_dir: "{{ iso_build_dir }}/{{ output_iso_name }}"
+
     rclone_release_path: "collaudo-iso:releases/latest"
+    rclone_conf_dir: "/etc/rclone"
+    rclone_conf_path: "{{ rclone_conf_dir }}/collaudo-iso.conf"
+    rclone_conf_service_path: "{{ rclone_conf_dir }}/collaudo-iso-service.json"
 
   tasks:
     # 1. Download ISO
     - name: Download ISO
       ansible.builtin.command:
-        cmd: "rclone copyto {{ rclone_release_path }} {{ output_iso_path }} --include='*'"
+        cmd: "rclone copyto {{ rclone_release_path }} {{ output_iso_dir }} --include='*' --config={{ rclone_conf_path }}"
         creates: "{{ output_iso_name }}"
         chdir: "{{ iso_build_dir }}"
       become: false
 
+    - name: Retrieve filename
+      ansible.builtin.shell:
+        cmd: "ls {{ output_iso_dir }} | head -n 1"
+      register: iso_filename
+
     # 2. Flash USB
     - name: Flash USB
-      ansible.builtin.shell: "{{ project_dir }}/scripts/fedora-build/flash_usb.sh {{ device }} {{ output_iso_path }}"
+      ansible.builtin.shell: "{{ project_dir }}/scripts/fedora-build/flash_usb.sh {{ device }} {{ output_iso_dir }}/{{ iso_filename.stdout }}"
       register: usb_script_output
       failed_when: > 
         usb_script_output.rc != 0 or 
