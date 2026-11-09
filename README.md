@@ -64,12 +64,12 @@ $ git apply ../conf/0001-Fedora-LXDE-Spin-kiwi-description.patch
 
 ## To build
 
-1. If not already done, bootstrap the local setup (should be done only once)
+1. Local setup bootstrap, if not already done (should be done only once)
 ```bash
 $ ./scripts/bootstrap.sh
 ```
 
-2. Enter the container and build the OEM self-installing ISO
+2. Build the OEM self-installing ISO
 ```bash
 $ ./scripts/build.sh
 ```
@@ -78,7 +78,7 @@ $ ./scripts/build.sh
 The output image is saved in `./output-build` folder.
 
 ## To flash
-Flash the `*.install.iso` file onto the USB device outside the container
+Flash the `*.install.iso` file onto the USB device 
 ```bash
 $ ./scripts/flash.sh [device] # (ex. /dev/sde)
 ```
