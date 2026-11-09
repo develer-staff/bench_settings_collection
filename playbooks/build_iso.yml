@@ -25,44 +25,26 @@
     rclone_conf_dir: "/etc/rclone"
     rclone_conf_path: "{{ rclone_conf_dir }}/collaudo-iso.conf"
     
-  pre_tasks:
-    - name: Ensure kiwi_submodule_path exists
-      ansible.builtin.file:
-        path: "{{ kiwi_submodule_path }}"
-        state: directory
-
   tasks:
-    # 1. Pull kiwi-descriptions repository (git submodule)
-    - name: Ensure git submodules are updated and initialized
-      ansible.builtin.command:
-        cmd: git submodule update --init --recursive
-      args:
-        chdir: "{{ kiwi_submodule_path }}"
-      register: git_submodule_result
-      changed_when: git_submodule_result.stderr != ""
+    # 1. Clone/fetch, switch branch, and initialize nested submodules
+    - name: Ensure kiwi-descriptions is at target version with submodules initialized
+      ansible.builtin.git:
+        repo: "https://forge.fedoraproject.org/releng/kiwi-descriptions" 
+        dest: "{{ kiwi_submodule_path }}"
+        version: "f{{ target_fedora_version }}"
+        recursive: true
+        update: true
+        force: true
 
-    # 2. Checkout to fedora target version branch
-    - name: Checkout to Fedora target version branch
-      ansible.builtin.command:
-        cmd: "git checkout f{{ target_fedora_version }}"
-      args:
-        chdir: "{{ kiwi_submodule_path }}"
-      register: git_submodule_result
-      changed_when: "'Already' not in git_submodule_result.stderr"
+    # 2. Apply patch
+    - name: Apply customizations patch inside kiwi-descriptions
+      ansible.posix.patch:
+        src: "{{ patch_file_path }}"
+        basedir: "{{ kiwi_submodule_path }}"
+        strip: 1
+        state: present
 
-    # 3. Apply customizations patch
-    - name: Apply patch using git apply inside kiwi-descriptions
-      ansible.builtin.command: 
-        cmd: "git apply {{ patch_file_path }}" 
-      args: 
-        chdir: "{{ kiwi_submodule_path }}" 
-      register: git_apply_result 
-      failed_when: 
-        - git_apply_result.rc != 0 
-        - "'patch does not apply' not in git_apply_result.stderr" 
-      changed_when: git_apply_result.rc == 0
-
-    # 4. Execute build_all script and build ISO
+    # 3. Execute build_all script and build ISO
     - name: Create image and execute build_iso with sudo
       become: true
       become_exe: sudo.ws
@@ -71,10 +53,11 @@
         chdir: "{{ project_dir }}"
         creates: "{{ iso_build_dir }}/{{ iso_file_name }}"
 
-    # 5. Move current release to old folder
+    # 4. Move current release to old folder
     - name: Move current release to old releases folder
       ansible.builtin.command: "rclone move collaudo-iso:releases/latest collaudo-iso:releases/old --include='*' --config={{ rclone_conf_path }}"
 
-    # 6. Upload file
+    # 5. Upload file
     - name: Upload file
       ansible.builtin.command: "rclone copyto {{ iso_file_path }} {{ rclone_dest_path }}/latest/{{ release_iso_file_name }} --config={{ rclone_conf_path }}"
+    
