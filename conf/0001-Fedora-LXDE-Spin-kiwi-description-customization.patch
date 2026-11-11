@@ -1,16 +1,16 @@
-From ebddf69a352a56c3d3265236f33c3a95d81e1354 Mon Sep 17 00:00:00 2001
+From 9dadde3226500aaa8c3251f21d85d5b4cb6dea17 Mon Sep 17 00:00:00 2001
 From: Gionatan Buono <gionatan9703@gmail.com>
-Date: Fri, 2 Oct 2026 10:32:09 +0200
-Subject: [PATCH] Fedora LXDE Spin kiwi-description customization
+Date: Wed, 11 Nov 2026 16:23:09 +0100
+Subject: [PATCH] Fedora 44 LXDE Spin kiwi-description customization
 
 ---
  Fedora.kiwi                  |  2 +-
  components/boot.xml          | 20 +++++++++++++++++---
- components/common.xml        |  2 ++
+ components/common.xml        |  3 +++
  components/desktops/lxde.xml |  6 +++---
  components/users.xml         |  5 +++--
  config.sh                    |  5 ++++-
- 6 files changed, 30 insertions(+), 10 deletions(-)
+ 6 files changed, 31 insertions(+), 10 deletions(-)
 
 diff --git a/Fedora.kiwi b/Fedora.kiwi
 index 4e6c5a4..4146715 100644
@@ -26,7 +26,7 @@ index 4e6c5a4..4146715 100644
  	</preferences>
  	<include from="this://./repositories/core.xml"/>
 diff --git a/components/boot.xml b/components/boot.xml
-index a46e723..b9d2c4a 100644
+index a46e723..074ac0d 100644
 --- a/components/boot.xml
 +++ b/components/boot.xml
 @@ -15,6 +15,7 @@
@@ -53,7 +53,7 @@ index a46e723..b9d2c4a 100644
  		<package name="grubby"/>
  	</packages>
  	<packages type="image" patternType="plusRecommended" profiles="BootCore,BootCoreLive">
-+    <!-- 
++    <!--
  		<package name="grub2-efi-aa64" arch="aarch64"/>
  		<package name="grub2-efi-aa64-modules" arch="aarch64"/>
  		<package name="grub2-efi-riscv64" arch="riscv64"/>
@@ -87,15 +87,16 @@ index a46e723..b9d2c4a 100644
  	<packages type="image" patternType="plusRecommended" profiles="BootCore">
  		<ignore name="kernel-*debug*"/>
 diff --git a/components/common.xml b/components/common.xml
-index dc1f34c..95aa175 100644
+index dc1f34c..e99c67b 100644
 --- a/components/common.xml
 +++ b/components/common.xml
-@@ -5,6 +5,8 @@
+@@ -5,6 +5,9 @@
  	</profiles>
  	<packages type="image" patternType="plusRecommended" profiles="BaseCommon">
  		<namedCollection name="standard"/>
-+    <package name="openssh-server"/>
++		<package name="openssh-server"/>
 +		<package name="openssl"/>
++		<package name="firefox"/>
  		<ignore name="qemu-user-static"/> <!-- Saves ~100MB -->
  	</packages>
  	<packages type="image" patternType="plusRecommended" profiles="HardwareCommon">
@@ -152,5 +153,5 @@ index abe98b1..00808f0 100755
 +
  exit 0
 -- 
-2.43.0
+2.53.0
 
