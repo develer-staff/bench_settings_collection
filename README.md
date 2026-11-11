@@ -318,10 +318,15 @@ sudo udevadm control --reload && sudo udevadm trigger
 
 ### Git checkout (as `collaudo`)
 
+> [!WARNING]
+> GitHub CLI `gh` must be installed and user with admin privileges (deploy keys) must be logged in (`gh auth login`)
+
 For each entry in `bench_git_repos` (from host_vars):
 
 1. Generate (or use) an SSH key for the repo  
-2. Print the public key and wait until you register it as a GitHub **deploy key** (no write access)  
+2. Uploads temporary public passphrase-less deploy key as a GitHub **deploy key** (no write access)  
+3. Checkouts the repository
+4. Deletes the temporary deploy key and uploads generated ssh key (with passphrase)
 3. Install the key and a `~collaudo/.ssh/config` Host entry  
 4. Clone/update the repo as user `collaudo`  
 5. Set the `origin` remote (SSH Host alias, or `repo_origin_url` if set)  
