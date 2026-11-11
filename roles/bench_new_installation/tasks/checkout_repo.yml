@@ -47,27 +47,6 @@
   delegate_to: localhost
   become: false
 
-- name: Show public key and wait until it has been registered
-  ansible.builtin.pause:
-    prompt: |2
-
-      ============================================================
-      Add this public SSH key for {{ inventory_hostname }} / collaudo
-
-      {{bench_repo_username}}@{{bench_repo_hostname}}{{ bench_repo_organization }}/{{ bench_repo_name }}.git
-
-      Go to, and add the public key, remember the deployed repo is whit NO WRITE ACCESS!
-
-      https://github.com/{{bench_repo_organization}}/{{bench_repo_name}}/settings/keys
-
-      to the git forge, then press Enter to continue
-      (Ctrl+C to abort).
-      ------------------------------------------------------------
-
-      {{ bench_ssh_pubkey_b64.content | b64decode | trim }}
-
-      ============================================================
-
 - name: Ensure collaudo ~/.ssh directory exists
   ansible.builtin.file:
     path: "/home/{{ bench_collaudo_user }}/.ssh"
@@ -127,6 +106,29 @@
     mode: "0600"
   no_log: false
 
+- name: Install public key for collaudo
+  ansible.builtin.copy:
+    content: "{{ bench_ansible_deploy_key_public }}"
+    dest: "/home/{{ bench_collaudo_user }}/.ssh/id_ed25519_ansible_deploy_key_public"
+    owner: "{{ bench_collaudo_user }}"
+    group: "{{ bench_collaudo_user }}"
+    mode: "0600"
+  no_log: false
+
+- name: Create temp local file with deploy public key
+  ansible.builtin.copy:
+    content: "{{ bench_ansible_deploy_key_public }}"
+    dest: "{{ local_tmpdir.path }}/id_ed25519_ansible_deploy_key_public"
+    mode: "0600"
+  become: false
+  delegate_to: localhost
+
+- name: Upload public key to repository with GitHub CLI
+  ansible.builtin.command:
+    cmd: "gh repo deploy-key add {{ local_tmpdir.path }}/id_ed25519_ansible_deploy_key_public -R {{ bench_repo_organization }}/{{ bench_repo_name }}"
+  become: false
+  delegate_to: localhost
+
 - name: Checkout Repo
   ansible.builtin.git:
     dest: "{{ bench_repo_dest }}"
@@ -138,7 +140,6 @@
   become: true
   become_user: "{{ bench_collaudo_user }}"
   register: git_checkout
-
 
 - name: Checkout info
   ansible.builtin.debug:
