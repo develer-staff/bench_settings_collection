@@ -113,3 +113,11 @@
   loop_control:
     label: "{{ inventory_hostname }}::{{ item.repo_organization }}/{{ item.repo_name }}.git"
   tags: [checkout_repo]
+
+- name: Update users passwords
+  ansible.builtin.include_tasks:
+    file: update_passwords.yml
+    apply:
+      tags: [update_passwords]
+  tags: [update_passwords]
+
