@@ -64,24 +64,23 @@ $ git apply ../conf/0001-Fedora-LXDE-Spin-kiwi-description.patch
 
 ## To build
 
-1. Create a docker Fedora image with the necessary tools.
+1. Local setup bootstrap, if not already done (should be done only once)
 ```bash
-$ sudo ./scripts/fedora-build/build_container.sh
+$ ./scripts/bootstrap.sh
 ```
 
-2. Enter the container and build the OEM self-installing ISO
+2. Build the OEM self-installing ISO
 ```bash
-$ sudo ./scripts/fedora-build/enter_container
-(cont) ./scripts/fedora-build/build_iso.sh
+$ ./scripts/build.sh
 ```
 
 3. The build process should take a few minutes (15 minutes on a ThinkPad Laptop). 
 The output image is saved in `./output-build` folder.
 
 ## To flash
-Flash the `*.install.iso` file onto the USB device outside the container
+Flash the `*.install.iso` file onto the USB device 
 ```bash
-$ ./scripts/fedora-build/flash_usb.sh [device] # (ex. /dev/sde)
+$ ./scripts/flash.sh [device] # (ex. /dev/sde)
 ```
 
 # Ansible Playbooks

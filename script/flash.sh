@@ -1,8 +1,8 @@
 #!/bin/bash
+# Flashes provided USB device with latest fedora ISO
 
-# Flash provided USB device with latest fedora ISO
 SCRIPT="$(basename "$0")"
-ISO_FOLDER="../../output-build/Fedora.x86_64-44.install.iso"
+ISO_FOLDER="../output-build/Fedora.x86_64-44.install.iso"
 
 cd "$(dirname "$0")"
 
@@ -38,4 +38,4 @@ if [[ $# -eq 2 ]]; then
   fi  
 fi
 
-dd if=$ISO_FOLDER of=$DEVICE status=progress
+sudo dd if=$ISO_FOLDER of=$DEVICE status=progress

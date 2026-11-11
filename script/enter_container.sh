@@ -1,5 +1,5 @@
 #!/bin/sh
-# Enter fedora container to build the image
+# Enters the fedora container to build the image
 # Must be run as root because kiwi-ng requires access to /dev
 
 if ! [ $(id -u) = 0 ]; then
@@ -11,5 +11,5 @@ cd "$(dirname "$0")"
 
 podman run -it --privileged \
   -v /dev:/dev \
-  -v "../../":/build \
+  -v "../":/build \
   fedora-collaudo-mkiso
