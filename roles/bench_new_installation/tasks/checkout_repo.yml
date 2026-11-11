@@ -128,6 +128,9 @@
     cmd: "gh repo deploy-key add {{ local_tmpdir.path }}/id_ed25519_ansible_deploy_key_public -R {{ bench_repo_organization }}/{{ bench_repo_name }}"
   become: false
   delegate_to: localhost
+  failed_when:
+    - gh_deploy_key_add.rc != 0
+    - "'already in use' not in gh_deploy_key_add.stderr"
 
 - name: Checkout Repo
   ansible.builtin.git:
@@ -159,6 +162,25 @@
   become_user: "{{ bench_collaudo_user }}"
   changed_when: true
   when: bench_repo_origin_url | length > 0
+
+- name: Retrieve deploy-key id
+  ansible.builtin.shell:
+    cmd: "gh repo deploy-key list -R {{ bench_repo_organization }}/{{ bench_repo_name }} | grep -i collaudo@{{ inventory_hostname }} | awk -F'\t' '{print $1}'"
+  register: deploy_key_id
+  become: false
+  delegate_to: localhost
+
+- name: Remove deploy key from GitHub
+  ansible.builtin.command:
+    cmd: "gh repo deploy-key delete {{ deploy_key_id.stdout }} -R {{ bench_repo_organization }}/{{ bench_repo_name }}"
+  become: false
+  delegate_to: localhost
+
+- name: Upload machine generated public key to repository with GitHub CLI
+  ansible.builtin.command:
+    cmd: "gh repo deploy-key add {{ local_tmpdir.path }}/{{ bench_ssh_key_filename }}.pub -R {{ bench_repo_organization }}/{{ bench_repo_name }}"
+  become: false
+  delegate_to: localhost
 
 - name: Remove temporary key file
   ansible.builtin.file:
