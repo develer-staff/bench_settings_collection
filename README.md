@@ -12,8 +12,11 @@ Supported target: **Fedora** (with LXDE desktop), see [7.1.5 Host setup guide](h
   - [Abstract](#abstract)
   - [Apply patches](#apply-patches)
   - [Customizations](#customizations)
-  - [To flash](#to-flash)
   - [To build](#to-build)
+    - [Step-by-step](#step-by-step)
+    - [build_all script](#buildall-script)
+    - [Tested environment](#tested-environment) 
+  - [To flash](#to-flash)
 - [Ansible Playbooks](#ansible-playbooks)
   - [What the playbook does](#what-the-playbook-does)
   - [Repository layout](#repository-layout)
@@ -48,12 +51,14 @@ It configures [Kiwi-Ng](https://osinside.github.io/kiwi/) image descriptions to 
 
 ## Apply Patches
 
-The patch can be found in `conf/0001-Fedora-LXDE-Spin-kiwi-description`.
+The patch can be found in `conf/0001-Fedora-44-LXDE-Spin-kiwi-description.patch`.
 To apply them (inside `kiwi-descriptions` folder):
 
 ```bash
-$ git apply ../conf/0001-Fedora-LXDE-Spin-kiwi-description.patch
+$ git apply ../conf/0001-Fedora-44-LXDE-Spin-kiwi-description.patch
 ```
+
+> Please note that the patch should match the Fedora version branch to be applied successfully (ex. Fedora 44 patch must be applied on `f44` branch)
 
 ## Customizations
 - `Fedora.kiwi`: added `openssh-server` and `openssl` packages necessary to run Ansible
@@ -75,7 +80,17 @@ $ ./scripts/build.sh
 ```
 
 3. The build process should take a few minutes (15 minutes on a ThinkPad Laptop). 
-The output image is saved in `./output-build` folder.
+The output image is saved in `./output-build`.
+
+### build_all script
+
+The build can be done calling `./scripts/build_all.sh`.
+Alternatively, the steps are automated by the Ansible playbook `playbooks/build_iso.yml`.
+
+### Tested environment
+
+The scripts where tested on Ubuntu 26.04 building Fedora 44. 
+In Fedora, if SELinux is enabled (`setenforce 1`), building inside the container will cause rsync errors related to extended attributes.
 
 ## To flash
 Flash the `*.install.iso` file onto the USB device 
@@ -83,7 +98,7 @@ Flash the `*.install.iso` file onto the USB device
 $ ./scripts/flash.sh [device] # (ex. /dev/sde)
 ```
 
-# Ansible Playbooks
+# new_installation.yml playbook
 
 ## What the playbook does
 
