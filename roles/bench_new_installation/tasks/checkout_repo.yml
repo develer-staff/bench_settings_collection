@@ -128,6 +128,7 @@
     cmd: "gh repo deploy-key add {{ local_tmpdir.path }}/id_ed25519_ansible_deploy_key_public -R {{ bench_repo_organization }}/{{ bench_repo_name }}"
   become: false
   delegate_to: localhost
+  register: gh_deploy_key_add
   failed_when:
     - gh_deploy_key_add.rc != 0
     - "'already in use' not in gh_deploy_key_add.stderr"
