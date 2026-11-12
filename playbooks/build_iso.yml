@@ -17,14 +17,10 @@
     iso_build_dir: "{{ project_dir }}/output-build"
     iso_file_name: "Fedora.x86_64-{{ target_fedora_version }}.install.iso"
     iso_file_path: "{{ iso_build_dir }}/{{ iso_file_name }}"
+    release_iso_file_name: "{{ ansible_facts['date_time'].date }}_{{ iso_file_name }}"
+  vars_files:
+    - "{{ project_dir }}/inventory/rclone.yml"
 
-    release_iso_file_name: "{{ ansible_date_time.date }}_{{ iso_file_name }}"
-
-    rclone_remote: "collaudo-iso"
-    rclone_dest_path: "{{ rclone_remote }}:releases"
-    rclone_conf_dir: "/etc/rclone"
-    rclone_conf_path: "{{ rclone_conf_dir }}/collaudo-iso.conf"
-    
   tasks:
     # 1. Clone/fetch, switch branch, and initialize nested submodules
     - name: Ensure kiwi-descriptions is at target version with submodules initialized
@@ -55,9 +51,9 @@
 
     # 4. Move current release to old folder
     - name: Move current release to old releases folder
-      ansible.builtin.command: "rclone move collaudo-iso:releases/latest collaudo-iso:releases/old --include='*' --config={{ rclone_conf_path }}"
+      ansible.builtin.command: "rclone move {{ rclone_conf_remote}}:releases/latest {{ rclone_conf_remote}}::releases/old --include='*' --config={{ rclone_conf_path }}"
 
     # 5. Upload file
     - name: Upload file
-      ansible.builtin.command: "rclone copyto {{ iso_file_path }} {{ rclone_dest_path }}/latest/{{ release_iso_file_name }} --config={{ rclone_conf_path }}"
+      ansible.builtin.command: "rclone copyto {{ iso_file_path }} {{ rclone_conf_remote }}:releases/latest/{{ release_iso_file_name }} --config={{ rclone_conf_path }}"
     
