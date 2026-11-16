@@ -44,7 +44,7 @@
     - name: Create image and execute build_iso with sudo
       become: true
       become_exe: sudo.ws
-      ansible.builtin.shell: "{{ project_dir }}/scripts/build_all.sh"      
+      ansible.builtin.shell: "{{ project_dir }}/script/build.sh"      
       args:
         chdir: "{{ project_dir }}"
         creates: "{{ iso_build_dir }}/{{ iso_file_name }}"
