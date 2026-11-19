@@ -1,0 +1,56 @@
+---
+- name: Download and flash USB drive with ISO
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  become_exe: sudo.ws
+
+  vars_prompt:
+    - name: device
+      prompt: "What is the device you want to flash?"
+      private: false
+  vars:
+    target_fedora_version: "44" # Note that the patch should be based on this Fedora version to be applied
+
+    # Project paths
+    project_dir: "{{ playbook_dir }}/.."
+    kiwi_submodule_path: "{{ project_dir }}/kiwi-descriptions"
+   
+    # Output file settings
+    iso_build_dir: "{{ project_dir }}/output-build"
+    output_iso_name: "Fedora.x86_64-{{ target_fedora_version }}.install.iso"
+    output_iso_path: "{{ iso_build_dir }}/{{ output_iso_name }}"
+  vars_files:
+    - "{{ project_dir }}/inventory/rclone.yml"
+
+  tasks:
+    - name: Get latest file
+      ansible.builtin.shell:
+        cmd: "rclone lsf {{ rclone_conf_remote }}:releases/latest --files-only --max-depth 1 --config={{ rclone_conf_path }} | sort | tail -n 1"
+      register: iso_filename
+      become: false
+
+    # 1. Download ISO
+    - name: Download ISO
+      ansible.builtin.command:
+        cmd: "rclone copyto {{ rclone_conf_remote }}:releases/latest/{{ iso_filename.stdout }} {{ output_iso_path }} --config={{ rclone_conf_path }}"
+        creates: "{{ output_iso_name }}"
+        chdir: "{{ iso_build_dir }}"
+      register: download_outcome
+      become: false
+
+    # 2. Flash USB
+    - name: Flash USB
+      ansible.builtin.shell: "{{ project_dir }}/script/flash.sh {{ device }} {{ output_iso_path }}"
+      register: usb_script_output
+      failed_when: > 
+        usb_script_output.rc != 0 or 
+        ('Missing' in usb_script_output.stdout) or 
+        ('ERROR' in usb_script_output.stdout)
+
+    # 3. Unmount
+    - name: Unmount USB
+      ansible.posix.mount:
+        path: "{{ device }}"
+        state: unmounted
+
