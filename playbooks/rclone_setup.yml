@@ -3,9 +3,11 @@
   hosts: localhost
   connection: local
   gather_facts: true
-  become_exe: sudo.ws
 
   vars:
+    # Ubuntu 26.04 ships sudo-rs as default sudo, which breaks Ansible become:
+    # use the classic sudo (sudo.ws) when available, plain sudo otherwise (e.g. Fedora)
+    ansible_become_exe: "{{ 'sudo.ws' if lookup('ansible.builtin.pipe', 'command -v sudo.ws || true') else 'sudo' }}"
     project_dir: "{{ playbook_dir }}/.."
   vars_files:
     - "{{ project_dir }}/inventory/rclone.yml"
