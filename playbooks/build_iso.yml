@@ -6,13 +6,17 @@
   become: false
 
   vars:
+    # Ubuntu 26.04 ships sudo-rs as default sudo, which breaks Ansible become:
+    # use the classic sudo (sudo.ws) when available, plain sudo otherwise (e.g. Fedora)
+    ansible_become_exe: "{{ 'sudo.ws' if lookup('ansible.builtin.pipe', 'command -v sudo.ws || true') else 'sudo' }}"
     target_fedora_version: "44" # Note that the patch should be based on this Fedora version to be applied
 
     # Project paths
     project_dir: "{{ playbook_dir }}/.."
     kiwi_submodule_path: "{{ project_dir }}/kiwi-descriptions"
-    patch_file_path: "{{ project_dir }}/conf/0001-Fedora-44-LXDE-Spin-kiwi-description.patch"
-    
+    #patch_file_path: "{{ project_dir }}/conf/0001-Fedora-44-LXDE-Spin-kiwi-description.patch"
+    patch_file_path: "{{ project_dir }}/conf/0001-Fedora-44-MATE-Spin-kiwi-description.patch"
+
     # Output file settings
     iso_build_dir: "{{ project_dir }}/output-build"
     iso_file_name: "Fedora.x86_64-{{ target_fedora_version }}.install.iso"
@@ -25,7 +29,7 @@
     # 1. Clone/fetch, switch branch, and initialize nested submodules
     - name: Ensure kiwi-descriptions is at target version with submodules initialized
       ansible.builtin.git:
-        repo: "https://forge.fedoraproject.org/releng/kiwi-descriptions" 
+        repo: "https://forge.fedoraproject.org/releng/kiwi-descriptions"
         dest: "{{ kiwi_submodule_path }}"
         version: "f{{ target_fedora_version }}"
         recursive: true
@@ -43,8 +47,7 @@
     # 3. Execute build_all script and build ISO
     - name: Create image and execute build_iso with sudo
       become: true
-      become_exe: sudo.ws
-      ansible.builtin.shell: "{{ project_dir }}/script/build.sh"      
+      ansible.builtin.shell: "{{ project_dir }}/script/build.sh"
       args:
         chdir: "{{ project_dir }}"
         creates: "{{ iso_build_dir }}/{{ iso_file_name }}"
@@ -56,4 +59,3 @@
     # 5. Upload file
     - name: Upload file
       ansible.builtin.command: "rclone copyto {{ iso_file_path }} {{ rclone_conf_remote }}:releases/latest/{{ release_iso_file_name }} --config={{ rclone_conf_path }}"
-    
