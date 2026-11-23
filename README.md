@@ -69,12 +69,21 @@ The output image is saved in `./output-build`.
 
 Alternatively, the steps are automated by the Ansible playbook `playbooks/build_iso.yml`.
 
-### Tested environment
+## 1.5 To test
 
 The scripts where tested on Ubuntu 26.04 building Fedora 44.
 In Fedora, if SELinux is enabled (`setenforce 1`), building inside the container will cause rsync errors related to extended attributes.
 
-## 1.5 To flash
+To test the ISO and the ansible-playbooks a utility script is provided to run a virtual machine with QEMU.
+```bash
+$ ./script/run.sh [ISO]
+```
+
+The script creates a `.raw` drive if it does not exists.
+If the ISO is provided, it can be selected on boot to install it onto the virtual machine.
+Otherwise, it will boot directly from the `.raw` drive.
+
+## 1.6 To flash
 Flash the `*.install.iso` file onto the USB device outside the container
 ```bash
 $ ./script/flash.sh [device] # (ex. /dev/sde)
