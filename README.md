@@ -100,6 +100,18 @@ $ ./scripts/flash.sh [device] # (ex. /dev/sde)
 
 The ansible playbook `./playbooks/flash_iso.yml` is also provided to perform the same steps.
 
+## To test in QEMU
+Boot the `*.install.iso` in a UEFI QEMU VM (requires `qemu` and `edk2-ovmf`/`ovmf`):
+```bash
+$ ./script/qemu.sh            # first run installs on a new disk, then boots it
+$ ./script/qemu.sh --install  # reinstall on the existing disk
+$ ./script/qemu.sh --reset    # delete disk and UEFI vars, start from scratch
+$ ./script/qemu.sh --live     # boot the built *.raw image without installing (changes discarded)
+$ ssh -p 2222 collaudo@localhost
+```
+When installing, select **Install** in the ISO boot menu: the default entry is "Boot from Hard Disk".
+The VM disk and UEFI vars are stored in `./output-qemu`. See `./script/qemu.sh --help` for all options.
+
 # Ansible Playbooks
 
 ## What the playbook does

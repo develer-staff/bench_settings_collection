@@ -44,13 +44,33 @@
         strip: 1
         state: present
 
-    # 3. Execute build_all script and build ISO
-    - name: Create image and execute build_iso with sudo
+    # 3. Execute build script and build ISO
+    # kiwi rsyncs files with --xattrs in the container /var/tmp: on SELinux
+    # enforcing hosts (e.g. Fedora) the container overlay rejects the
+    # security.selinux xattr, so a host directory is mounted there instead.
+    - name: Build ISO image
       become: true
-      ansible.builtin.shell: "{{ project_dir }}/script/build.sh"
-      args:
-        chdir: "{{ project_dir }}"
-        creates: "{{ iso_build_dir }}/{{ iso_file_name }}"
+      block:
+        - name: Create temporary directory for kiwi
+          ansible.builtin.tempfile:
+            state: directory
+            path: /var/tmp
+            prefix: kiwi-build.
+          register: kiwi_tmp
+
+        - name: Create image and execute build script with sudo
+          ansible.builtin.shell: "{{ project_dir }}/script/build.sh"
+          args:
+            chdir: "{{ project_dir }}"
+            creates: "{{ iso_build_dir }}/{{ iso_file_name }}"
+          environment:
+            KIWI_TMP: "{{ kiwi_tmp.path }}"
+      always:
+        - name: Remove temporary directory for kiwi
+          ansible.builtin.file:
+            path: "{{ kiwi_tmp.path }}"
+            state: absent
+          when: kiwi_tmp.path is defined
 
     # 4. Move current release to old folder
     - name: Move current release to old releases folder

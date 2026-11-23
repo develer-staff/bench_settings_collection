@@ -2,3 +2,4 @@
 tags
 inventory/host_vars/*
 output-build
+output-qemu
