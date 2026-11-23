@@ -3,13 +3,15 @@
   hosts: localhost
   connection: local
   gather_facts: true
-  become_exe: sudo.ws
 
   vars_prompt:
     - name: device
       prompt: "What is the device you want to flash?"
       private: false
   vars:
+    # Ubuntu 26.04 ships sudo-rs as default sudo, which breaks Ansible become:
+    # use the classic sudo (sudo.ws) when available, plain sudo otherwise (e.g. Fedora)
+    ansible_become_exe: "{{ 'sudo.ws' if lookup('ansible.builtin.pipe', 'command -v sudo.ws || true') else 'sudo' }}"
     target_fedora_version: "44" # Note that the patch should be based on this Fedora version to be applied
 
     # Project paths
