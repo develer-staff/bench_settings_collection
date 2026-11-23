@@ -44,7 +44,6 @@ $ git apply ../conf/0001-Fedora-44-LXDE-Spin-kiwi-description.patch
 
 > Please note that the patch should match the Fedora version branch to be applied successfully (ex. Fedora 44 patch must be applied on `f44` branch)
 
-## Customizations
 ## 1.3 Customizations
 
 - `Fedora.kiwi`: added `openssh-server` and `openssl` packages necessary to run Ansible
@@ -57,36 +56,31 @@ $ git apply ../conf/0001-Fedora-44-LXDE-Spin-kiwi-description.patch
 
 1. Local setup bootstrap, if not already done (should be done only once)
 ```bash
-$ ./scripts/bootstrap.sh
+$ ./script/bootstrap.sh
 ```
 
 2. Build the OEM self-installing ISO
 ```bash
-$ ./scripts/build.sh
+$ ./script/build.sh
 ```
 
-3. The build process should take a few minutes (15 minutes on a ThinkPad Laptop). 
+3. The build process should take a few minutes (15 minutes on a ThinkPad Laptop).
 The output image is saved in `./output-build`.
 
-### build_all script
-
-The build can be done calling `./scripts/build_all.sh`.
 Alternatively, the steps are automated by the Ansible playbook `playbooks/build_iso.yml`.
 
 ### Tested environment
 
-The scripts where tested on Ubuntu 26.04 building Fedora 44. 
+The scripts where tested on Ubuntu 26.04 building Fedora 44.
 In Fedora, if SELinux is enabled (`setenforce 1`), building inside the container will cause rsync errors related to extended attributes.
 
 ## 1.5 To flash
 Flash the `*.install.iso` file onto the USB device outside the container
 ```bash
-$ ./scripts/flash.sh [device] # (ex. /dev/sde)
+$ ./script/flash.sh [device] # (ex. /dev/sde)
 ```
 
 The ansible playbook `./playbooks/flash_iso.yml` is also provided to perform the same steps.
-
-# Ansible Playbooks
 
 # 2. Ansible Playbooks
 
@@ -123,6 +117,11 @@ pip install passlib
   
 - `sshpass` - SSH password authentication
 - `passlib` - password hashing for `develer` / `collaudo`
+
+> [!NOTE]
+> `Ubuntu 26.04` changed its default `sudo` implementation from `sudo.ws` to `sudo-rs`.
+> Since the new implementation has a different prompt it might cause Ansible to crash when run with `-K` option.
+> `become_exe: sudo.ws` was added to fix this problem.
 
 ### Managed machine Requisites
 
@@ -162,7 +161,7 @@ benches:
 
 On **first** bootstrap, if `develer` does not exist yet, temporarily use `ansible_user: root` (or `collaudo`).
 
-`rclone_setup`,`build_iso` and `flash_iso` playbooks are meant to be executed on the local machine, therefore the target host is `localhost`. 
+`rclone_setup`,`build_iso` and `flash_iso` playbooks are meant to be executed on the local machine, therefore the target host is `localhost`.
 
 ### Per-host secrets
 
@@ -195,6 +194,7 @@ Do not commit plaintext `inventory/host_vars/` files (see `.gitignore`).
 ---
 
 ### Deploy key for repo checkout
+
 For the first checkout from a git repo ansible need a deploy key with write access.
 After the first checkout, the task will generate a read only deploy key and the other key must be deleted.
 
@@ -246,6 +246,22 @@ From the repo root:
 ansible-playbook playbooks/rclone_setup.yml -K --ask-vault-pass
 ```
 
+### Secrets
+
+The playbook relies on the encrypted vault `inventory/rclone.yml`.
+It contains the following secrets required to setup and interact with Google Drive through `rclone`.
+
+
+| Variable | Purpose |
+| --- | --- |
+| `rclone_conf_remote` | remote name (as defined in .conf) |
+| `rclone_conf_dir` | where to store rclone files |
+| `rclone_conf_path` | `collaudo-iso.conf` configuration file path |
+| `rclone_conf_content` | `collaudo-iso.conf` content |
+| `rclone_conf_service_path` | `collaudo-iso-service.json` service account file |
+| `rclone_conf_service_content` | `collaudo-iso-service.json` content |
+
+
 ### Main steps in detail
 
 1. Downloads `rclone` package if not already done
@@ -258,11 +274,34 @@ ansible-playbook playbooks/rclone_setup.yml -K --ask-vault-pass
 
 ## 2.5 `build_iso` playbook
 
+### Prerequisites
+
+- `rclone` must be configured in your local machine.
+
 ### What the playbook does
+
+Automates the end-to-end creation and publication of a custom Fedora ISO image locally.
 
 ### How to run
 
+```bash
+ansible-playbook playbooks/build_iso.yml -K --ask-vault-pass
+```
+
 ### Main steps in detail
+
+1. Sync `kiwi-descriptions` repository: pulls and checks out the branch matching the target Fedora version (e.g., f44), recursively initializes submodules, and forces a clean state (force: true) to prevent conflicts with previous patches.
+
+2. Apply customization patch: applies `conf/0001-Fedora-44-LXDE-Spin-kiwi-description.patch`.
+
+3. Build the ISO image: runs `script/build.sh` with elevated privileges from the project root. Skips it if ISO already exists.
+
+4. Move `remote:releases/latest/*.iso` to `remote:releases/old`
+
+5. Publish new ISO: uploads the newly generated ISO to `remote:releases/latest/`, prefixing the filename with the current build date (YYYY-MM-DD_Fedora.x86_64-<version>.install.iso).
+
+> [!WARNING]
+> To ensure that the uploaded file has the latest changes, delete the old ISO before running the playbook.
 
 ## 2.6 `flash_iso` playbook
 
@@ -469,7 +508,7 @@ ansible-playbook playbooks/upgrade.yml --ask-vault-pass
 
 ### Main steps in detail
 
-1. Checks whether the remote machina is running Fedora, its packages are updated and if is there a pending reboot.
+1. Checks whether the remote machine is running Fedora, its packages are updated and if is there a pending reboot.
 
 2. Downloads upgrade packages.
 
