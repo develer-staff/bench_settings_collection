@@ -51,7 +51,7 @@
 
     # 4. Move current release to old folder
     - name: Move current release to old releases folder
-      ansible.builtin.command: "rclone move {{ rclone_conf_remote}}:releases/latest {{ rclone_conf_remote}}::releases/old --include='*' --config={{ rclone_conf_path }}"
+      ansible.builtin.command: "rclone move {{ rclone_conf_remote }}:releases/latest {{ rclone_conf_remote }}:releases/old --include='*' --config={{ rclone_conf_path }}"
 
     # 5. Upload file
     - name: Upload file
